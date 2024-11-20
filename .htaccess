@@ -1,0 +1,14 @@
+<FilesMatch "\.(env|ini|log|sh|bak|htaccess|htpasswd|json|lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirecionar todas as requisições para o index.php na pasta 'public'
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/index.php [L,QSA]
+</IfModule>
