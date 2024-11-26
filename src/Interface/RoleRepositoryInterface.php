@@ -9,14 +9,15 @@ use App\Result\ResultOperation;
 
 interface RoleRepositoryInterface
 {
-
-    public function addRole(RoleCreateDto $role): ResultOperation;
+    public function createRole(RoleCreateDto $role): ResultOperation;
 
     public function deleteRole(string $id): ResultOperation;
 
     public function updateRole(RoleCreateDto $role): ResultOperation;
 
-    public function getRoleById(string $id): ?RoleResponseDto;
+    public function findRoleById(string $id): ?ResultOperation;
+
+    public function findRoleByName(string $name): ?ResultOperation;
 
     public function getRoles(): ?array;
 
