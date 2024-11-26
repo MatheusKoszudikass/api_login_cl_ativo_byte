@@ -8,8 +8,7 @@ use App\Result\ResultOperation;
 
 interface LoginRepositoryInterface
 {
-    public function addLogin(LoginDto $login): ResultOperation;
-
+    public function login(LoginDto $login): ResultOperation;
+    public function recoveryAccount(string $email_username): ResultOperation;
     public function validadteTokenJwt(string $token): ResultOperation;
-    public function updateLogin(LoginDto $login): ResultOperation;
 }
