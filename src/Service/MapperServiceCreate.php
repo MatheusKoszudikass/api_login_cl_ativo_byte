@@ -15,15 +15,15 @@ class MapperServiceCreate
     {
         $dto = new RoleCreateDto();
         $dto->name = $role->getName();
-        $dto->description = $role->getDescription($dto->description);
+        $dto->description = $role->getDescription();
         return $dto;
     }
 
     public function mapRole(RoleCreateDto $dto): Role
     {
-        $role = new Role($dto->name);
+        $role = new Role($dto->name, $dto->description);
         $dto->id = $role->getId();
-        $dto->description = $role->getDescription($dto->description);
+        $dto->description = $role->getDescription();
         return $role;
     }
     public function mapUserToDto(User $user): UserCreateDto
@@ -53,8 +53,12 @@ class MapperServiceCreate
         // $expiresAt = new \DateTimeImmutable('+1 minutes');
         $user->getTwoFactorExpiresAt($expiresAt);
         $user->setTwoFactorToken( $dto->token);
-        foreach ($dto->roles as $roleName) {
-            $role = new Role($roleName);
+
+        foreach ($dto->roles as $roleData) {
+            if (isset($roleData['id']) && isset($roleData['name'])) {
+                $role = new Role($roleData['name'], $roleData['description']);
+                $user->createRole($role);  // Adiciona a role ao usuário
+            }
         }
 
         return $user;
