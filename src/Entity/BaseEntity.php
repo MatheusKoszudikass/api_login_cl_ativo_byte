@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 
 abstract class BaseEntity
 {
@@ -45,6 +46,12 @@ abstract class BaseEntity
             mt_rand(0, 0xffff),
             mt_rand(0, 0xffff)
         );
+    }
+
+
+    public function setSystemAccess() : void 
+    {
+      $this->systemAccess = new DateTime('now');
     }
 
 
