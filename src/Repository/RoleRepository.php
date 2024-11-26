@@ -30,7 +30,7 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
     }
 
 
-    public function addRole(RoleCreateDto $role): ResultOperation
+    public function createRole(RoleCreateDto $role): ResultOperation
     {
         if ($role === null) {
             return new ResultOperation(false, 'Role não pode ser nulo');
@@ -40,7 +40,11 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
             $role = $this->_mapperServiceCreate->mapRole($role);
             $this->getEntityManager()->persist($role);
             $this->getEntityManager()->flush();
-            return new ResultOperation(true, 'Role criado com sucesso');
+
+            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
+
+            return new ResultOperation(true, 'Role criado com sucesso', [$result]);
+
         } catch (Exception $exception) {
             return new ResultOperation(false, $exception->getMessage());
         }
@@ -56,30 +60,64 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
             $role = $this->_mapperServiceCreate->mapRole($role);
             $this->getEntityManager()->persist($role);
             $this->getEntityManager()->flush();
+
             return new ResultOperation(true, 'Role atualizado com sucesso');
+
         } catch (Exception $exception) {
             return new ResultOperation(false, $exception->getMessage());
         }
     }
 
 
-    public function getRoleById(string $id): ?RoleResponseDto
+    public function findRoleById(string $id): ?ResultOperation
     {
         if ($id == null) {
-            return null;
+            return new ResultOperation(false, 'O identificador da role não pode estar vazio.');
         }
 
         try {
-            $role = $this->getEntityManager()->getRepository(Role::class)->find($id);
-            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
-
-            if ($result == null) {
-                return null;
+            
+            $role = $this->getEntityManager()->getRepository(Role::class)->findOneBy(
+                ['id'=> $id]);
+           
+            if ($role == null) {
+                return new ResultOperation(false, 'Nenhuma role encontrada com o identificador fornecido.');
             }
 
-            return $result;
-        } catch (Exception $exception) {
-            return null;
+            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
+
+            return new ResultOperation(true, 'Role encontrada com sucesso!', data: [$result]);
+
+        } catch (Exception $e) {
+            
+            return new ResultOperation(false, "Erro: " . $e->getMessage());
+        }
+    }
+
+    public function findRoleByName(string $name): ?ResultOperation
+    {
+        if($name == null)
+        {
+            return new ResultOperation(false, 'O nome da role não pode estar vazio.');
+        }
+
+        try{
+
+            $role = $this->getEntityManager()->getRepository(
+                Role::class)->findOneBy(['name' => $name]);
+
+            if($role == null)
+            {
+                return new ResultOperation(false, 'Nenhuma role encontrada com o nome fornecido.');
+            }
+
+            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
+
+            return new ResultOperation(true, 'Role encontrada com sucesso!', data: [$result]);
+
+        }catch(Exception $e){
+
+            return new ResultOperation(false, "Erro: " . $e->getMessage());
         }
     }
 
