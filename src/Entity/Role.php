@@ -23,10 +23,11 @@ class Role extends BaseEntity
      */
     private  $users;
 
-    public function __construct(string $roles)
+    public function __construct(string $name, string $description)
     {
         parent::__construct();
-        $this->name = $roles;
+        $this->name = $name;
+        $this->description = $description;
     }
 
     public function getId(): ?string
@@ -46,8 +47,8 @@ class Role extends BaseEntity
         return $this;
     }
 
-    public function getDescription(string $description): string
+    public function getDescription(): string
     {
-        return $this->description = $description;
+        return $this->description;
     }
 }
