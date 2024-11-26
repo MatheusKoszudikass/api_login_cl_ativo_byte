@@ -3,6 +3,9 @@
 /.env.local
 /.env.local.php
 /.env.*.local
+/migrations
+/php_errors.log
+/public/php_errors.log
 /vendor
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
