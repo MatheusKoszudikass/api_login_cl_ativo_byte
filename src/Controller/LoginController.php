@@ -22,12 +22,12 @@ class LoginController extends AbstractController
         $this->_loginRepostory = $loginRepostory;
     }
 
-    #[Route('/api/login', name: 'login')]
-    public function addLogin(#[MapRequestPayload] LoginDto $login, Request $request): JsonResponse
+    #[Route('/api/login', methods: ['POST'], name: 'login')]
+    public function Login(#[MapRequestPayload] LoginDto $login, Request $request): JsonResponse
     {
         $login->lastLoginIp = $request->getClientIp();
 
-        $result = $this->_loginRepostory->addLogin($login);
+        $result = $this->_loginRepostory->login($login);
 
         // Verifica se getData() não está vazio antes de acessar o índice [0]
         if (!empty($result->getData()) && $result->getData()[0] !== '') {
@@ -64,7 +64,7 @@ class LoginController extends AbstractController
         }
     }
 
-    #[Route('/api/auth/verify', name: 'login_verify')]
+    #[Route('/api/auth/verify', methods: ['POST'], name: 'login_verify')]
     public function verifyToken(Request $request): JsonResponse
     {
         $token = $request->cookies->get('JWT');
@@ -73,11 +73,19 @@ class LoginController extends AbstractController
             // Verifica o token
             try {
                 $this->_loginRepostory->validadteTokenJwt($token); // Método que valida o token
-                return $this->json(['status' => true]);
+                return $this->json([true]);
             } catch (Exception $e) {
-                return $this->json(['status' => false], 400);
+                return $this->json([false], 400);
             }
         }
-        return $this->json(['status' => false], 400);
+        return $this->json([false], 400);
+    }
+
+    #[Route('/api/auth/recovery', methods: ['POST'], name: 'login_recovery')]
+    public function recoveryAccount(#[MapRequestPayload] LoginDto $loginDto): JsonResponse
+    {
+        $result = $this->_loginRepostory->recoveryAccount($loginDto->email_userName);
+
+        return $this->json($result, 200);
     }
 }
