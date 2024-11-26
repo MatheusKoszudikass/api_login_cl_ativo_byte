@@ -24,7 +24,7 @@ class UserController extends AbstractController
      #[Route('/api/user/add', name: 'api_user_add')]
      public function addUser(#[MapRequestPayload] UserCreateDto $userDto): JsonResponse
      {
-         $result = $this->_userRepositoryInterface->addUser($userDto);
+         $result = $this->_userRepositoryInterface->createUser($userDto);
          
          return $this->json($result);
      }
@@ -40,7 +40,7 @@ class UserController extends AbstractController
          }
  
          // Verificar se o token é válido e ativar o Two-Factor Authentication
-         $result = $this->_userRepositoryInterface->verifyTwoFactorTokenAndEnable($token);
+         $result = $this->_userRepositoryInterface->enableTwoFactorAuth($token);
 
          return $this->json($result);
 
@@ -80,21 +80,6 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/api/user/login', name: 'api_user_login')]
-    public function login(Request $request): JsonResponse
-    {
-        $email = $request->get('email');
-        $password = $request->get('password');
-
-        $result = $this->_userRepositoryInterface->loginUser($email, $password);
-
-        if (!$result->isSuccess()) {
-            return new JsonResponse(['error' => $result->getMessage()], Response::HTTP_UNAUTHORIZED);
-        }
-
-        return new JsonResponse(['message' => $result->getMessage(), 'token' => $result->getData()['token']], Response::HTTP_OK);
-    }
-
     #[Route('/api/user/logout', name: 'api_user_logout')]
     public function logout(Request $request): JsonResponse
     {
@@ -109,7 +94,7 @@ class UserController extends AbstractController
     {
         $email = $request->get('email');
 
-        $result = $this->_userRepositoryInterface->requestPasswordReset($email);
+        $result = $this->_userRepositoryInterface->initiatePasswordReset($email);
 
         return new JsonResponse(['message' => $result->getMessage()]);
     }
@@ -120,7 +105,7 @@ class UserController extends AbstractController
         $token = $request->get('token');
         $password = $request->get('password');
 
-        $result = $this->_userRepositoryInterface->resetPassword($token, $password);
+        $result = $this->_userRepositoryInterface->confirmPasswordReset($token, $password);
 
         return new JsonResponse(['message' => $result->getMessage()]);
     }
