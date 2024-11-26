@@ -34,7 +34,7 @@ class UserCreateDto
     #[Assert\NotBlank(message: "A senha não pode estar vazia.")]
     #[Assert\Length(min: 8, max: 50, minMessage: "A senha deve ter pelo menos {{ limit }} caracteres.", maxMessage: "A senha não pode ter mais de {{ limit }} caracteres.")]
     public string $userName;
-
+    
     public ?array $roles = [];
 
     public string $token;
