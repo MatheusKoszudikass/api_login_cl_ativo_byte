@@ -6,15 +6,13 @@ use App\Repository\LoginRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+
 #[ORM\Entity(repositoryClass: LoginRepository::class)]
 class Login extends BaseEntity
 {
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $email_userName = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $passwordHash = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTime $lastLoginAttempt = null;
@@ -26,7 +24,6 @@ class Login extends BaseEntity
     {
         parent::__construct();
         $this->email_userName = $this->validateEmail($email);
-        $this->passwordHash = $this->validatePasswordHash($passwordHash);
         $this->lastLoginIp = $this->validateLastLoginIp($lastLoginIp);
         $this->lastLoginAttempt = new \DateTime();
     }
@@ -51,16 +48,6 @@ class Login extends BaseEntity
         return $email_userName;
     }
 
-    private function validatePasswordHash(string $passwordHash): string
-    {
-        $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/';
-        if(preg_match($pattern, $passwordHash))
-        {
-            throw new \InvalidArgumentException("Senha inválida.");
-        }
-
-        return $passwordHash;
-    }
 
     private function validateLastLoginIp(string $lastLoginIp): ?string
     {
@@ -84,18 +71,6 @@ class Login extends BaseEntity
         return $this;
     }
 
-    public function getPasswordHash(): ?string
-    {
-        return $this->passwordHash;
-    }
-
-    public function setPasswordHash(?string $passwordHash): static
-    {
-        $this->passwordHash = $passwordHash;
-
-        return $this;
-    }
-
     public function getLastLoginAttempt(): ?\DateTimeInterface
     {
         return $this->lastLoginAttempt;
@@ -103,8 +78,21 @@ class Login extends BaseEntity
 
     public function setLastLoginAttempt(\DateTimeInterface $lastLoginAttempt): static
     {
-        $this->lastLoginAttempt = $lastLoginAttempt;
-
+        $currentTime = new \DateTime('now');
+        
+        // Validação explícita do parâmetro.
+        if (!$lastLoginAttempt) {
+            throw new \InvalidArgumentException('O parâmetro $lastLoginAttempt não pode ser nulo.');
+        }
+    
+        // Calcula a diferença entre a tentativa anterior e o momento atual.
+        $interval = $currentTime->diff($lastLoginAttempt);
+    
+        // Atualiza se passou mais de 1 minuto.
+        if ($interval->i > 0 || $interval->h > 0 || $interval->d > 0) {
+            $this->lastLoginAttempt = $currentTime;
+        }
+    
         return $this;
     }
 
