@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -42,7 +43,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
 
     #[ORM\ManyToMany(targetEntity: "Role", inversedBy: "users", cascade: ["persist"])]
     #[ORM\JoinTable(name: "user_roles")]
-    private Collection  $roles;
+    private Collection $roles;
 
     #[ORM\Column(length: 255)]
     private ?string $twoFactorToken = null;
@@ -76,6 +77,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     public function mapUserDto(): UserResponseDto
     {
         $userDto = new UserResponseDto();
+        $userDto->id = $this->id;
         $userDto->email = $this->email;
         $userDto->firstName = $this->firstName;
         $userDto->lastName = $this->lastName;
@@ -168,7 +170,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->isLegalentity ?? false;
     }
 
-    public function addRole(Role $role): void
+    public function createRole(Role $role): void
     {
         if (!$this->roles->contains($role)) {
             $this->roles[] = $role;
@@ -181,7 +183,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     }
 
     public function authenticate(string $inputPassword): bool
-    {
+    {   
         return password_verify($inputPassword, $this->password);
     }
 
