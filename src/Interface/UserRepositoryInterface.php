@@ -4,20 +4,23 @@ namespace App\Interface;
 
 use App\Dto\Response\UserResponseDto;
 use App\Dto\Create\UserCreateDto;
+use App\Entity\User;
 use App\Result\ResultOperation;
 
 interface UserRepositoryInterface
 {
-    public function addUser(UserCreateDto $user): ResultOperation;
-    public function verifyTwoFactorTokenAndEnable(string $token): ResultOperation;
-    public function sentMessageCreateUser(string $firstName, string $token): string;
-    public function updateUser(UserResponseDto $user): ResultOperation;
-    public function deleteUser(string  $id): ResultOperation;
-    public function getUserById(string  $id): ?UserResponseDto;
-    public function getUserByEmail(string $email): ?UserResponseDto;
-    public function getUserByUserName(string $userName): ?UserResponseDto;
-    public function getUserByCnpjCpfRg(string $cnpjCpfRg): ?UserResponseDto;
-    public function loginUser(string $email, string $password): ResultOperation;
-    public function requestPasswordReset(string $email): ResultOperation;
-    public function resetPassword(string $token, string $password): ResultOperation;
+    public function createUser(UserCreateDto $user): ResultOperation; // Adicionar usuário
+    public function enableTwoFactorAuth(string $token): ResultOperation; // Verificar e habilitar 2FA
+    public function sendWelcomeMessage(string $firstName, string $token): string; // Enviar mensagem de boas-vindas
+    public function sendPasswordRecoveryMessage(string $firstName, string $token): string; // Enviar mensagem para redefinir senha
+    public function validateUser(UserCreateDto $userCreateDto): ResultOperation; // Validar dados do usuário
+    public function updateUser(UserResponseDto $user): ResultOperation; // Atualizar informações do usuário
+    public function deleteUserById(string $id): ResultOperation; // Remover usuário por ID
+    public function findUserById(string $id): ?ResultOperation; // Buscar usuário por ID
+    public function findUserByEmail(string $email): ?ResultOperation; // Buscar usuário por email
+    public function findUserByUserName(string $userName): ?ResultOperation; // Buscar usuário por nome de usuário
+    public function findUserByDocument(string $document): ?ResultOperation; // Buscar usuário por CPF/CNPJ/RG
+    public function authenticateUser(string $email, string $password): ResultOperation; // Autenticar usuário
+    public function initiatePasswordReset(string $email): ResultOperation; // Solicitar redefinição de senha
+    public function confirmPasswordReset(string $token, string $password): ResultOperation; // Redefinir senha
 }
