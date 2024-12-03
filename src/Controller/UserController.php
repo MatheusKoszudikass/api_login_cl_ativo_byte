@@ -29,14 +29,14 @@ class UserController extends AbstractController
          return $this->json($result);
      }
 
-    #[Route('/api/user/active-user', name: 'api_user_verify')]
+    #[Route('/api/user/active-user', methods: ['POST'], name: 'api_user_verify')]
     public function verify(Request $request): JsonResponse
     {
          // Obter o token via query string
          $token = $request->query->get('token');
 
          if (!$token) {
-             return new Response('Token não fornecido', Response::HTTP_BAD_REQUEST);
+             return $this->json(['message' => 'Token não encontrado'], Response::HTTP_BAD_REQUEST);
          }
  
          // Verificar se o token é válido e ativar o Two-Factor Authentication

@@ -229,7 +229,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         <p>Seja bem-vindo ao <strong>AtivoByte</strong>, {$firstName}!</p>
         <p>Estamos felizes em tê-lo conosco e esperamos que tenha uma ótima experiência em nossa plataforma.</p>
         <p>Para completar o seu cadastro e ativar sua conta, por favor, clique no link abaixo:</p>
-        <p><a href='https://www.ativobyte.com/api/user/active-user?token={$token}'>Ativar minha conta</a></p>
+        <p><a href='https://www.cliente.ativobyte.com/active-user?token={$token}'>Ativar minha conta</a></p>
         <p>Se você não solicitou esse cadastro, por favor, ignore este e-mail.</p>
         <p>Atenciosamente,<br>Equipe Ativo Byte</p>
       ";

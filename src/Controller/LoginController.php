@@ -22,6 +22,16 @@ class LoginController extends AbstractController
         $this->_loginRepostory = $loginRepostory;
     }
 
+    /**
+     * Performs user login and returns a JWT token
+     *
+     * @param LoginDto $login Dada login
+     * @param Request $request Request
+     *
+     * @return JsonResponse Response token JWT
+     *
+     * @throws Exception if the email or password is incorrect or if the user is deactivated.
+     */
     #[Route('/api/login', methods: ['POST'], name: 'login')]
     public function Login(#[MapRequestPayload] LoginDto $login, Request $request): JsonResponse
     {
@@ -29,23 +39,11 @@ class LoginController extends AbstractController
 
         $result = $this->_loginRepostory->login($login);
 
-        // Verifica se getData() não está vazio antes de acessar o índice [0]
         if (!empty($result->getData()) && $result->getData()[0] !== '') {
             $token = $result->getData()[0];
-            $cookie = new Cookie(
-                'JWT',                       // Nome do cookie 
-                $token,                      // Valor do token
-                time() + 86400,                // Tempo de expiração (1 hora, por exemplo)
-                '/',                         // Caminho do cookie, onde estará acessível ("/" significa acessível em toda a aplicação)
-                null,                     // Domínio do cookie (deixe null para o domínio atual)
-                false,                        // Secure: enviar apenas se estiver usando HTTPS
-                true,                     // HttpOnly: garantir que o cookie não seja acessado via JavaScript
-                false,                        // SameSite: define se o cookie deve ser enviado junto com requisições cross-site (defina conforme sua necessidade)
-                false                   // Raw: caso queira enviar o valor como está (sem codificação)
-            );
 
             $response = new JsonResponse();
-            $response->headers->setCookie($cookie);
+            $response->headers->setCookie($this->createCookie($token));
             $response->setData([
                 'message' => $result->getMessage(),
                 'status' => $result->isSuccess()
@@ -53,7 +51,6 @@ class LoginController extends AbstractController
 
             return $response;
         } else {
-            // Se getData() estiver vazio ou o índice [0] estiver vazio, envia uma resposta sem cookie
             $response = new JsonResponse();
             $response->setData([
                 'message' => $result->getMessage(),
@@ -64,24 +61,64 @@ class LoginController extends AbstractController
         }
     }
 
-    #[Route('/api/auth/verify', methods: ['POST'], name: 'login_verify')]
+    /**
+     * Creates a cookie from a given token.
+     *
+     * @param string $token
+     *
+     * @return Cookie
+     */
+    private function createCookie(string $token): Cookie
+    {
+        return new Cookie(
+            $_ENV['COOKIE_NAME'],                            // Cookie name
+            $token,                                        // Token value
+            time() + $_ENV['COOKIE_EXPIRATION_TIME'],    // Expiration time(1, for example)
+            $_ENV['COOKIE_PATH'],                         // Cookie path, where it will be accessible("/" means accessible throughout the application)
+            $_ENV['COOKIE_DOMAIN'],                    // Cookie domain(leave null for the current domain)
+            $_ENV['COOKIE_SECURE'],                   // Secure: send only if using HTTTPS
+            $_ENV['COOKIE_HTTP_ONLY'],             // HttpOnly: ensure that the cookie is not accessed by javaScript 
+            $_ENV['COOKIE_RAW'],                       // SameSite: defines whether the cookie can be sent with cross-site requests
+            $_ENV['COOKIE_SAMESITE']             // Raw: if you want to send the value as is (without coding)
+        );
+    }
+    
+
+    /**
+     * Verifies a token JWT and returns a boolean indicating if the token is valid or not.
+     * 
+     * @param Request $request The request with the token to be verified.
+     * @return JsonResponse A JSON response with a boolean indicating if the token is valid or not.
+     * @throws Exception If the token is invalid.
+     */
+    #[Route('/api/auth/verify', methods: ['GET'], name: 'login_verify')]
     public function verifyToken(Request $request): JsonResponse
     {
-        $token = $request->cookies->get('JWT');
+        $token = $request->cookies->get('session');
 
-        if ($token) {
-            // Verifica o token
+        if ($token != null) {
+
             try {
-                $this->_loginRepostory->validadteTokenJwt($token); // Método que valida o token
-                return $this->json([true]);
+                $this->_loginRepostory->validateTokenJwt($token); 
+                return $this->json(true, 200);
             } catch (Exception $e) {
-                return $this->json([false], 400);
+                return $this->json(false, 400);
             }
         }
-        return $this->json([false], 400);
+        return $this->json(false, 200);
     }
 
-    #[Route('/api/auth/recovery', methods: ['POST'], name: 'login_recovery')]
+    /**
+     * Recovery account using email.
+     * 
+     * This action recovers an account by sending an email with a link to reset the password.
+     * The link is valid for a short period of time and can only be used once.
+     * 
+     * @param LoginDto $loginDto The login dto with the email of the user to be recovered.
+     * @return JsonResponse A json response with the result of the operation.
+     */
+
+    #[Route('/api/auth/recovery-account', methods: ['POST'], name: 'login_recovery')]
     public function recoveryAccount(#[MapRequestPayload] LoginDto $loginDto): JsonResponse
     {
         $result = $this->_loginRepostory->recoveryAccount($loginDto->email_userName);

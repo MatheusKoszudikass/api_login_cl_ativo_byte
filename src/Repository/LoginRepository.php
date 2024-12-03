@@ -102,7 +102,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
      * @param string $email_userName email_userName do Login a ser buscado.
      * @return Login O objeto Login encontrado ou null caso n encontre.
      */
-    private function findLogin(string $email_userName): Login
+    private function findLogin(string $email_userName): ?Login
     {
         return $this->getEntityManager()->getRepository(Login::class)
         ->findOneBy(['email_userName' => $email_userName]);
@@ -122,12 +122,8 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
     {
         $login = $this->findLogin($loginDto->email_userName);
 
-        if (!$login) {
-            $this->persistLogin(new Login(
-                $loginDto->email_userName,
-                $loginDto->password,
-                $loginDto->lastLoginIp
-            ));
+        if ($login == null) {
+            $this->persistLogin($this->_mapperService->mapLogin($loginDto));
             return true;
         }
 
@@ -136,6 +132,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         
         return false;
     }
+
 
     /**
      * Valida um token JWT e verifica se o usuário está autenticado.
@@ -148,7 +145,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
      * @return ResultOperation A operação de resultado com a mensagem e o token.
      * @throws Exception Em caso de erro, lança uma exceção com a mensagem detalhada.
      */
-    public function validadteTokenJwt(string $token): ResultOperation
+    public function validateTokenJwt(string $token): ResultOperation
     {
         try {
             $token = $this->_twoFactorAuthService->verifyToken($token);
@@ -159,9 +156,14 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }
     }
 
+    /**
+     * Verifica se o  ultimo acesso do usuário foi mais de 1 minuto atrás no sistema.
+     * Caso sim, atualiza o  ultimo acesso e persiste as alterações no Login.
+     * 
+     * @param string $email_userName email_userName do Login a ser verificado.
+     */
     private function verifyLastSystemAccess(string $email_userName): void {
         $login = $this->findLogin($email_userName);
-
         $login->setSystemAccess();
         $this->persistLogin($login);
     }
@@ -216,14 +218,15 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }
     }
 
-        /**
+
+    /**
      * Persiste um objeto Login no banco de dados.
      * 
      * @param Login $login O objeto Login a ser persistido.
      */
-    private function persistLogin(Object $login): void
+    private function persistLogin(Object $object): void
     {
-        $this->getEntityManager()->persist($login);
+        $this->getEntityManager()->persist($object);
         $this->getEntityManager()->flush();
     }
 }
