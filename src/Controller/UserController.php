@@ -20,8 +20,13 @@ class UserController extends AbstractController
         $this->_userRepositoryInterface = $userRepositoryInterface;
     }
 
-
-     #[Route('/api/user/add', name: 'api_user_add')]
+    /**
+     * Add a new user to the system.
+     *
+     * @param UserCreateDto $userDto The user data to be added.
+     * @return JsonResponse The result of the operation.
+     */
+     #[Route('/api/user/add', methods: ['POST'], name: 'api_user_add')]
      public function addUser(#[MapRequestPayload] UserCreateDto $userDto): JsonResponse
      {
          $result = $this->_userRepositoryInterface->createUser($userDto);
@@ -29,22 +34,29 @@ class UserController extends AbstractController
          return $this->json($result);
      }
 
-    #[Route('/api/user/active-user', methods: ['POST'], name: 'api_user_verify')]
+
+/*************  ✨ Codeium Command ⭐  *************/
+    /**
+     * Enable two factor authentication for the user given the token.
+     *
+     * @param Request $request The request with the token to be verified.
+     * @return JsonResponse A JSON response with the result of the operation.
+     */
+/******  a4dc5bde-ebc2-49dc-a9a0-44fdedb3ad76  *******/    #[Route('/api/user/active-user', methods: ['POST'], name: 'api_user_verify')]
     public function verify(Request $request): JsonResponse
     {
-         // Obter o token via query string
          $token = $request->query->get('token');
 
          if (!$token) {
              return $this->json(['message' => 'Token não encontrado'], Response::HTTP_BAD_REQUEST);
          }
  
-         // Verificar se o token é válido e ativar o Two-Factor Authentication
          $result = $this->_userRepositoryInterface->enableTwoFactorAuth($token);
 
          return $this->json($result);
 
     }
+    
     #[Route('/api/user/update', name: 'api_user_update')]
     public function updateUser(Request $request): JsonResponse
     {
@@ -89,6 +101,15 @@ class UserController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/api/user/requestPasswordReset", name="api_user_requestPasswordReset")
+     *
+     * Request a password reset for the given email.
+     *
+     * @param Request $request The request with the email.
+     *
+     * @return JsonResponse A JSON response with the result of the operation.
+     */
     #[Route('/api/user/requestPasswordReset', name: 'api_user_requestPasswordReset')]
     public function requestPasswordReset(Request $request): JsonResponse
     {
@@ -99,6 +120,13 @@ class UserController extends AbstractController
         return new JsonResponse(['message' => $result->getMessage()]);
     }
 
+    /**
+     * Resets the password for the user with the given token and new password.
+     *
+     * @param Request $request The request with the token and new password.
+     *
+     * @return JsonResponse A JSON response with the result of the operation.
+     */
     #[Route('/api/user/resetPassword', name: 'api_user_resetPassword')]
     public function resetPassword(Request $request): JsonResponse
     {
