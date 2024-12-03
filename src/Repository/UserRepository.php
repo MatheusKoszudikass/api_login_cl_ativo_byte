@@ -229,7 +229,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         <p>Seja bem-vindo ao <strong>AtivoByte</strong>, {$firstName}!</p>
         <p>Estamos felizes em tê-lo conosco e esperamos que tenha uma ótima experiência em nossa plataforma.</p>
         <p>Para completar o seu cadastro e ativar sua conta, por favor, clique no link abaixo:</p>
-        <p><a href='https://www.cliente.ativobyte.com/active-user?token={$token}'>Ativar minha conta</a></p>
+        <p><a href='https://www.cliente.ativobyte.com.br/active-user?token={$token}'>Ativar minha conta</a></p>
         <p>Se você não solicitou esse cadastro, por favor, ignore este e-mail.</p>
         <p>Atenciosamente,<br>Equipe Ativo Byte</p>
       ";
@@ -241,7 +241,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     <p>Olá, {$firstName},</p>
     <p>Recebemos uma solicitação para redefinir sua senha na plataforma <strong>AtivoByte</strong>.</p>
     <p>Se foi você quem solicitou, clique no link abaixo para redefinir sua senha:</p>
-    <p><a href='https://www.ativobyte.com/api/user/reset-password?token={$token}'>Redefinir minha senha</a></p>
+    <p><a href='https://www.cliente.ativobyte.com.br/reset-password?token={$token}'>Redefinir minha senha</a></p>
     <p>Este link é válido por 24 horas. Após esse período, você precisará solicitar um novo link.</p>
     <p>Se você não solicitou a recuperação de senha, por favor, ignore este e-mail. Sua conta permanecerá segura.</p>
     <p>Atenciosamente,<br>Equipe Ativo Byte</p>
