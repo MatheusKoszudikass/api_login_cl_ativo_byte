@@ -1,7 +1,7 @@
 nelmio_cors:
     defaults:
         allow_credentials: true
-        allow_origin: ['https://cliente.ativobyte.com.br']
+        allow_origin: ['https://cliente.ativobyte.com.br', 'http://192.168.0.2:8080']
         allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
         allow_headers: ['Content-Type', 'Authorization']
         max_age: 3600
