@@ -49,9 +49,9 @@ class MapperServiceCreate
             $dto->userName,
             $dto->cnpjCpfRg,
         );
-        $expiresAt = (new \DateTimeImmutable())->modify('+1 days');
+        // $expiresAt = (new \DateTimeImmutable())->modify('+1 days');
         // $expiresAt = new \DateTimeImmutable('+1 minutes');
-        $user->getTwoFactorExpiresAt($expiresAt);
+        $user->getTwoFactorExpiresAt();
         $user->setTwoFactorToken( $dto->token);
 
         foreach ($dto->roles as $roleData) {
