@@ -102,25 +102,6 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/requestPasswordReset", name="api_user_requestPasswordReset")
-     *
-     * Request a password reset for the given email.
-     *
-     * @param Request $request The request with the email.
-     *
-     * @return JsonResponse A JSON response with the result of the operation.
-     */
-    #[Route('/api/user/requestPasswordReset', name: 'api_user_requestPasswordReset')]
-    public function requestPasswordReset(Request $request): JsonResponse
-    {
-        $email = $request->get('email');
-
-        $result = $this->_userRepositoryInterface->initiatePasswordReset($email);
-
-        return new JsonResponse(['message' => $result->getMessage()]);
-    }
-
-    /**
      * Resets the password for the user with the given token and new password.
      *
      * @param Request $request The request with the token and new password.
@@ -135,7 +116,7 @@ class UserController extends AbstractController
 
         $result = $this->_userRepositoryInterface->confirmPasswordReset($token, $password);
 
-        return new JsonResponse(['message' => $result->getMessage()]);
+        return $this->json([$result]);
     }
 }
 
