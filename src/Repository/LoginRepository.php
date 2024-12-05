@@ -3,23 +3,18 @@
 namespace App\Repository;
 
 use App\Entity\Login;
-use App\Entity\User;
 use App\Dto\Create\UserCreateDto;
 use App\Dto\LoginDto;
-use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Interface\LoginRepositoryInterface;
 use App\Interface\UserRepositoryInterface;
 use App\Result\ResultOperation;
 use App\Service\TwoFactorAuthService;
-use App\Interface\UserReppositoryInterface;
 use Exception;
 use App\Service\MapperService;
-use App\Service\MapperServiceResponse;
 use App\Service\EmailService;
-use phpDocumentor\Reflection\Types\Boolean;
-use PhpParser\Node\Expr\Cast\Object_;
+use App\Service\MapperServiceCreate;
 
 /**
  * @extends ServiceEntityRepository<Login>
@@ -27,6 +22,8 @@ use PhpParser\Node\Expr\Cast\Object_;
 class LoginRepository extends ServiceEntityRepository implements LoginRepositoryInterface
 {
     private MapperService $_mapperService;
+
+    private MapperServiceCreate $_mapperServiceCreate;
     private EmailService $_mailer;
     private TwoFactorAuthService $_twoFactorAuthService;
     private UserRepositoryInterface $_userRepository;
@@ -34,12 +31,14 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
     public function __construct(
         ManagerRegistry $registry,
         MapperService $mapperService,
+        MapperServiceCreate $mapperServiceCreate,
         EmailService $mailer,
         TwoFactorAuthService $twoFactorAuthService,
         UserRepositoryInterface $userRepository
     ) {
         parent::__construct($registry, Login::class);
         $this->_mapperService = $mapperService;
+        $this->_mapperServiceCreate = $mapperServiceCreate;
         $this->_mailer = $mailer;
         $this->_twoFactorAuthService = $twoFactorAuthService;
         $this->_userRepository = $userRepository;
@@ -156,11 +155,14 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }
     }
 
+
     /**
-     * Verifica se o  ultimo acesso do usuário foi mais de 1 minuto atrás no sistema.
-     * Caso sim, atualiza o  ultimo acesso e persiste as alterações no Login.
+     * Verifica a última acesso ao sistema para um usuário baseado em seu email.
      * 
-     * @param string $email_userName email_userName do Login a ser verificado.
+     * Encontra o objeto Login do usuário pelo email, atualiza a data do último acesso
+     * do sistema e persiste as alterações.
+     * 
+     * @param string $email_userName email do usuário a ser verificado.
      */
     private function verifyLastSystemAccess(string $email_userName): void {
         $login = $this->findLogin($email_userName);
@@ -170,17 +172,19 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
 
    
     /**
-     * Inicia o processo de recuperação de conta para um usuário.
+     * Initiates the account recovery process for a user based on their email.
      *
-     * Verifica se o email fornecido é válido. Se o email for inválido, retorna uma mensagem de erro.
-     * Caso contrário, busca o usuário no repositório. Se o usuário não for encontrado, retorna uma falha.
-     * Se o usuário for encontrado, gera um token de autenticação de dois fatores e o atribui ao usuário.
-     * Persiste as alterações no login do usuário e envia um email com o token para recuperação de senha.
-     * Retorna sucesso se o email foi enviado corretamente. Em caso de erro, uma exceção é lançada.
+     * Validates the provided email and checks if the user exists in the repository.
+     * If the email is invalid or the user is not found, returns an appropriate error message.
+     * Checks if the user's account is activated and if the recovery token is expired.
+     * If the account is not activated or the token is expired, returns a message to check the email.
+     * Generates a new reset password token and sets its expiration time.
+     * Persists the updated user data and sends a password recovery email to the user.
+     * Returns a success message if the email is sent correctly, otherwise throws an exception.
      *
-     * @param string $email_username O email do usuário para iniciar a recuperação de conta.
-     * @return ResultOperation A operação de resultado com mensagem de sucesso ou erro.
-     * @throws Exception Em caso de erro durante o processo de recuperação de conta.
+     * @param string $email_username The email of the user to initiate the account recovery.
+     * @return ResultOperation The result of the operation with a success or error message.
+     * @throws Exception In case of errors during the account recovery process.
      */
 
     public function recoveryAccount(string $email_username): ResultOperation
@@ -188,7 +192,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         try{
 
             if(!filter_var($email_username, FILTER_VALIDATE_EMAIL))
-                return new ResultOperation(false, 'Verifique o e-mail cadastrado!');
+                return new ResultOperation(false, 'Verifique o e-mail!');
 
             $result = $this->_userRepository->findUserByEmail($email_username);
             if($result->isSuccess() == false)return $result;
@@ -196,9 +200,17 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
             $data = $result->getData();
             $user = $data[0];
 
+            if($this->_userRepository->verifyTwoTokenFactorExpired($user, $email_username) == true)
+               return new ResultOperation(false, 'Conta não ativada, verifique o email cadastrado!');
+
+
+            if($this->_userRepository->verifyTokenExpiredRecoveryAccount($user) == true)
+                return new ResultOperation(true, 'Verifique seu e-mail!');
+             
             $token = $this->_twoFactorAuthService->generateToken();
 
-            $user->setTwoFactorToken($token);
+            $user->setResetPasswordToken($token);
+            $user->setResetPasswordTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
             $this->persistLogin($user);
           
             $menssage = $this->_userRepository->sendPasswordRecoveryMessage(
@@ -217,7 +229,6 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
             return new ResultOperation(true, 'Erro:'. $e->getMessage());
         }
     }
-
 
     /**
      * Persiste um objeto Login no banco de dados.
