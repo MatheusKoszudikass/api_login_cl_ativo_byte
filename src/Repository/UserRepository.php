@@ -4,10 +4,9 @@ namespace App\Repository;
 
 use App\Dto\Create\RoleCreateDto;
 use App\Dto\Create\UserCreateDto;
-use App\Dto\Response\RoleResponseDto;
 use App\Dto\Response\UserResponseDto;
 use App\Entity\User;
-use App\Repository\UnsupportedUserException;
+use App\Interface\RoleRepositoryInterface;
 use App\Interface\UserRepositoryInterface;
 use App\Result\ResultOperation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -20,14 +19,14 @@ use App\Service\MapperServiceCreate;
 use App\Service\EmailService;
 use App\Service\MapperServiceResponse;
 use App\Service\TwoFactorAuthService;
-use Symfony\Component\Validator\Tests\Fixtures\ToString;
+
 
 /**
  * @extends ServiceEntityRepository<User>
  */
 class UserRepository extends ServiceEntityRepository implements UserRepositoryInterface, PasswordUpgraderInterface
 {
-    private RoleRepository $_roleRepository;
+    private RoleRepositoryInterface $_roleRepository;
     private MapperServiceCreate $_mapperServiceCreate;
     private MapperServiceResponse $_mapperServiceResponse;
     private EmailService $_mailer;
@@ -35,7 +34,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
     public function __construct(
         ManagerRegistry $registry,
-        RoleRepository $roleRepository,
+        RoleRepositoryInterface $roleRepository,
         MapperServiceCreate $mapperServiceCreate,
         MapperServiceResponse $mapperServiceResponse,
         EmailService $mailer,
@@ -95,11 +94,11 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         try {
 
             // Verifica se o usuário já está cadastrado
-              $result = $this->findUserByEmail($userDto->email);
-              $result = $this->findUserByUserName($userDto->userName);
+            $result = $this->findUserByEmail($userDto->email);
+            $result = $this->findUserByUserName($userDto->userName);
 
-              if($result->isSuccess() == true)return new ResultOperation(false, 'Usuário já existe');
-              
+            if ($result->isSuccess() == true) return new ResultOperation(false, 'Usuário já existe');
+
             // Gera um token de autenticação de dois fatores e o atribui ao DTO
             $token = $this->_twoFactorAuthService->generateToken();
             $userDto->token = $token;
@@ -109,7 +108,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
             // Itera sobre as roles fornecidas no DTO para verificar e associar ao usuário
             foreach ($userDto->roles as $roleExistVerify) {
-                
+
                 // Procura a role pelo ID
                 $role = $this->_roleRepository->findRoleById($roleExistVerify['id']);
 
@@ -124,11 +123,15 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                     $roleCreateDto->name = $roleExistVerify['name'];
                     $roleCreateDto->description = $roleExistVerify['description'];
 
-                   $role = $this->_roleRepository->createRole($roleCreateDto);
+                    $role = $this->_roleRepository->createRole($roleCreateDto);
                 }
 
                 $user->createRole($this->_mapperServiceResponse->mapRole($role->getData()[0]));
             }
+
+            $user->setTowoFactorExpiresAt(
+                (new \DateTimeImmutable('now'))->modify('+1 days')
+            );
 
             // Persiste a entidade User (ainda não salva no banco até o flush)
             $this->getEntityManager()->persist($user);
@@ -140,14 +143,13 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
 
             // Gera a mensagem de boas-vindas para o usuário
-            $mensagem = $this->sendWelcomeMessage($userDto->firstName, $userDto->token);
+            $mensagem = $this->sendWelcomeMessage($userDto->firstName . $userDto->lastName, $userDto->token);
 
             // Envia o email de confirmação/cadastro para o usuário
             $this->_mailer->sendEmail($userDto->email, 'AtivoByte - Cadastrado', $mensagem);
 
             // Retorna uma operação de sucesso com uma mensagem e os dados do usuário criado
             return new ResultOperation(true, 'Usuário criado com sucesso. Verifique sua caixa de email para ativação da conta.');
-
         } catch (Exception $e) {
             // Lança uma exceção em caso de erro, incluindo a mensagem detalhada
             throw new Exception("Erro ao criar usuário: " . $e->getMessage());
@@ -173,7 +175,8 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     {
         // Busca o usuário no banco de dados com base no token de autenticação de dois fatores
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(
-            ['twoFactorToken' => $token]);
+            ['twoFactorToken' => $token]
+        );
 
         if ($user == null) {
             // Retorna uma falha caso o token não corresponda a nenhum usuário
@@ -182,7 +185,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
         try {
             // Verifica se o token expirou com base no método do objeto User
-            if ($user->verifyTwoFactorExpiresAt($dateTime = new \DateTimeImmutable())) {
+            if ($user->verifyTwoFactorExpiresAt( new \DateTimeImmutable())) {
 
                 // Gera um novo token caso o atual tenha expirado
                 $token = $this->_twoFactorAuthService->generateToken();
@@ -225,40 +228,32 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     /******  92bcd828-6415-433a-be50-4776ed796da6  *******/
     public function sendWelcomeMessage(string $firstName, string $token): string
     {
+        $baseUrl = $_ENV['CORS_ALLOW_ORIGINS'];
+
         return "
         <p>Seja bem-vindo ao <strong>AtivoByte</strong>, {$firstName}!</p>
         <p>Estamos felizes em tê-lo conosco e esperamos que tenha uma ótima experiência em nossa plataforma.</p>
         <p>Para completar o seu cadastro e ativar sua conta, por favor, clique no link abaixo:</p>
-        <p><a href='https://www.cliente.ativobyte.com.br/active-user?token={$token}'>Ativar minha conta</a></p>
+        <p><a href=\"{$baseUrl}/active-user?token={$token}\">Ativar minha conta</a></p>
         <p>Se você não solicitou esse cadastro, por favor, ignore este e-mail.</p>
         <p>Atenciosamente,<br>Equipe Ativo Byte</p>
-      ";
+    ";
     }
 
     public function sendPasswordRecoveryMessage(string $firstName, string $token): string
-{
-    return "
+    {
+        $baseUrl = $_ENV['CORS_ALLOW_ORIGINS'];
+        return "
     <p>Olá, {$firstName},</p>
     <p>Recebemos uma solicitação para redefinir sua senha na plataforma <strong>AtivoByte</strong>.</p>
     <p>Se foi você quem solicitou, clique no link abaixo para redefinir sua senha:</p>
-    <p><a href='https://www.cliente.ativobyte.com.br/reset-password?token={$token}'>Redefinir minha senha</a></p>
+    <p><a href=\"{$baseUrl}/reset-password?token={$token}\">Redefinir minha senha</a></p>
     <p>Este link é válido por 24 horas. Após esse período, você precisará solicitar um novo link.</p>
     <p>Se você não solicitou a recuperação de senha, por favor, ignore este e-mail. Sua conta permanecerá segura.</p>
     <p>Atenciosamente,<br>Equipe Ativo Byte</p>
     ";
-}
+    }
 
-    /**
-     * Valida um usuário e retorna um DTO com os dados do usuário caso esteja correto.
-     *
-     * Verifica se o email ou nome de usuário existe e se a senha é válida.
-     * Caso o usuário esteja desativado, envia um email com um link para ativar.
-     * Caso contrário, retorna um DTO com os dados do usuário.
-     *
-     * @param UserCreateDto $userDto DTO com os dados do usuário a ser validado
-     * @return UserResponseDto DTO com os dados do usuário caso esteja correto
-     * @throws Exception Caso o email ou senha estejam incorretos ou caso o usuário esteja desativado
-     */
     public function validateUser(UserCreateDto $userDto): ResultOperation
     {
         try {
@@ -271,19 +266,85 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
 
             if (!$user->isTwoFactorEnabled()) {
-                // Gera um novo token caso o atual tenha expirado
-                $token = $this->_twoFactorAuthService->generateToken();
-
-                // Atualiza o token no usuário e mapeia para um DTO
-                $userDto = $this->updateToken($user, $token);
-                $this->sendTwoFactorActivationEmail($userDto);
+                if ($user->verifyTwoFactorExpiresAt(
+                    new \DateTimeImmutable('now')) == true) {
+                    // Gera um novo token caso o atual tenha expirado
+                    $token = $this->_twoFactorAuthService->generateToken();
+                    // Atualiza o token no usuário e mapeia para um DTO
+                    $userDto = $this->updateToken($user, $token);
+                    $this->sendTwoFactorActivationEmail($userDto);
+                }
                 return new ResultOperation(false, 'Conta não ativada, verifique o email cadastrado!');
             }
 
             return new ResultOperation(true, 'Usuário valídado com sucesso!');
         } catch (Exception $e) {
-           return new ResultOperation(false, "Erro na validação do usuário: " . $e->getMessage());
+            return new ResultOperation(false, "Erro na validação do usuário: " . $e->getMessage());
         }
+    }
+    
+
+    /**
+     * Verifica se o token de autenticação de dois fatores é válido e
+     * se o usuário está desativado.
+     *
+     * Se o token for inválido, gera um novo token e envia um email com
+     * o token atualizado.
+     * Se o token for válido e o usuário estiver desativado, retorna true.
+     *
+     * @param User $user O objeto User a ser verificado.
+     * @param string $email O email do usuário.
+     * @return bool True se o token for inválido ou o usuário estiver desativado, false caso contrário.
+     */
+    public function verifyTwoTokenFactorExpired(User $user, string $email): bool
+    {
+        if($user->isTwoFactorEnabled() == false ) {
+            if($user->verifyTwoFactorExpiresAt( new \DateTimeImmutable('now')) == true){
+
+                $tokenActiveCount = $this->_twoFactorAuthService->generateToken();
+                $menssage = $this->sendWelcomeMessage(
+                    $user->getfullName(), $tokenActiveCount
+                );
+
+                $user->setTwoFactorToken($tokenActiveCount);
+                $user->setTowoFactorExpiresAt( 
+                    new \DateTimeImmutable('+1 days'));
+
+                $this->getEntityManager()->persist($user);
+                $this->getEntityManager()->flush();
+
+                $this->_mailer->sendEmail(
+                    $user->isEmail($user->isEmail($email)),
+                    'AtivoByte - Cadastrado',
+                    $menssage,
+                );
+
+                $user->setTwoFactorToken($tokenActiveCount);
+            }
+            return true; 
+        }
+
+        return false;
+    }
+    
+
+    /**
+     * Verifica se o token de recuperação de senha expirou.
+     *
+     * Verifica se o token de recuperação de senha do usuário está nulo e
+     * se o token expirou com base no método do objeto User.
+     *
+     * @param User $user O objeto User a ser verificado
+     * @return bool True se o token expirou, false caso contrário
+     */
+    public function verifyTokenExpiredRecoveryAccount(User $user): bool
+    {
+        if($user->getResetPasswordTokenExpiresAt() != null &&
+        $user->verifyResetPasswordTokenExpiresAt(new \DateTimeImmutable('now')) == false){
+
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -337,8 +398,8 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
         try {
             $user->setTwoFactorToken($token);
-            $user->getTwoFactorExpiresAt($dateTime =
-                (new \DateTimeImmutable())->modify('+1 days'));
+            $user->setTowoFactorExpiresAt((new \DateTimeImmutable())
+                ->modify('+1 days'));
             $this->getEntityManager()->persist($user);
             $this->getEntityManager()->flush();
             $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
@@ -483,18 +544,18 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         try {
 
             $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(
-                ['email' => $email]);
+                ['email' => $email]
+            );
 
             if ($user == null) {
-                
+
                 return new ResultOperation(false, 'Usuário não existe', [$user]);
             }
 
             return new ResultOperation(true, 'Usuário encontrado com sucesso!', [$user]);
-
         } catch (Exception $e) {
 
-           return new ResultOperation(false, 'Erro ao buscar usuário pelo email: ' . $e->getMessage());
+            return new ResultOperation(false, 'Erro ao buscar usuário pelo email: ' . $e->getMessage());
         }
     }
 
@@ -520,7 +581,8 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         try {
 
             $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(
-                ['userName' => $userName]);
+                ['userName' => $userName]
+            );
 
             if ($user == null) {
 
@@ -528,7 +590,6 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             }
 
             return new ResultOperation(true, 'Usuário encontrado com sucesso!', [$user]);
-
         } catch (Exception $e) {
 
             return new ResultOperation(false, 'Erro ao buscar usuário pelo userName: ' . $e->getMessage());
@@ -552,10 +613,9 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             }
 
             return new ResultOperation(true, 'Usuário encontrado com sucesso!', [$user]);
-
         } catch (Exception $e) {
 
-           return new ResultOperation(false, 'Erro ao buscar usuário pelo cpf ou cnpj: ' . $e->getMessage());
+            return new ResultOperation(false, 'Erro ao buscar usuário pelo cpf ou cnpj: ' . $e->getMessage());
         }
     }
 
@@ -592,37 +652,8 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             $token = JWT::encode($payload, $secretKey, 'HS256');
 
             return new ResultOperation(true, 'Login realizado com sucesso', ['token', $token]);
-
         } catch (Exception $e) {
 
-            throw new Exception(false, 'Erro ao buscar usuário: ' . $e->getMessage());
-        }
-    }
-
-    public function initiatePasswordReset(string $email): ResultOperation
-    {
-        if ($email == null) {
-
-            return new ResultOperation(false, 'Email não pode ser nulo');
-        }
-
-        try {
-
-            $user = $this->_em->getRepository(User::class)->findOneBy(['email' => $email]);
-
-            if ($user == null) {
-                return new ResultOperation(false, 'Usuário não encontrado');
-            }
-
-            $resetToken = bin2hex(random_bytes(16));
-            $expirationTime = new \DateTime('+2 hour');
-
-            $this->sentPasswordResetEmail($user->getEmail(),  $resetToken);
-
-            return new ResultOperation(true, 'Instruções para redefinição de senha foram enviadas para o seu e-mail');
-
-        } catch (Exception $e) {
-            
             throw new Exception(false, 'Erro ao buscar usuário: ' . $e->getMessage());
         }
     }
@@ -634,19 +665,22 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         }
 
         try {
-            $user = $this->_em->getRepository(User::class)->findOneBy(['passwordResetToken' => $token]);
+            $user = $this->getEntityManager()->getRepository(
+                User::class)->findOneBy(['resetPasswordToken' => $token]);
 
-            if ($user == null || new \DateTime() > $user->getPasswordResetExpiresAt()) {
-                return new ResultOperation(false, 'Token inválido');
-            }
+            if($user == null)
+               return new ResultOperation(false, 'Token inválido');
 
-            $hashedPassword = password_hash($password,  PASSWORD_BCRYPT);
-            $user->setPassword($hashedPassword);
-            $user->setPasswordResetToken(null);
-            $user->setPasswordResetExpiresAt(null);
 
-            $this->_em->persist($user);
-            $this->_em->flush();
+            if ($this->verifyTokenExpiredRecoveryAccount($user) == false)
+                return new ResultOperation(false, 'Token expírado');
+
+            $user->resetPassword($password);
+            $user->setResetPasswordToken(null);
+            $user->setResetPasswordTokenExpiresAt(null);
+
+            $this->getEntityManager()->persist($user);
+            $this->getEntityManager()->flush();
 
             return new ResultOperation(true, 'Senha redefinida com sucesso');
         } catch (Exception $e) {
