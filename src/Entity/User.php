@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Dto\Create\UserCreateDto;
 use App\Dto\Response\UserResponseDto;
 use App\Repository\UserRepository;
 use DateTimeInterface;
@@ -53,6 +54,12 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
 
     #[ORM\Column(nullable: false)]
     private ?bool $isTwoFactorEnabled = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $resetPasswordToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $resetPasswordTokenExpiresAt = null;
 
 
     public function __construct(
@@ -159,6 +166,12 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $this->dateCreated = new \DateTime();
     }
 
+    public function resetPassword(string $newPassword): void
+    {
+        $this->password = $this->hashPassword($newPassword);
+        $this->dateCreated = new \DateTime();
+    }
+
     public function updateEmail(string $newEmail): void
     {
         $this->email = $this->validateEmail($newEmail);
@@ -219,14 +232,21 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this;
     }
 
-    public function getTwoFactorExpiresAt(\DateTimeImmutable $dateTime ): ?\DateTimeInterface
+    public function getTwoFactorExpiresAt(): ?\DateTimeInterface
     {
-        return $this->twoFactorExpiresAt = $dateTime;
+        return $this->twoFactorExpiresAt;
+    }
+
+    public function setTowoFactorExpiresAt(\DateTimeImmutable $twoFactorExpiresAt): static
+    {
+        $this->twoFactorExpiresAt = $twoFactorExpiresAt;
+
+        return $this;
     }
 
     public function verifyTwoFactorExpiresAt(\DateTimeImmutable $dateTime): bool
     {
-        if($dateTime > $this->twoFactorExpiresAt)
+        if($dateTime >= $this->twoFactorExpiresAt) 
         {
            return true;
         }
@@ -237,10 +257,54 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     {
         return $this->isTwoFactorEnabled;
     }
+
     public function setTwoFactorEnabled(bool $isTwoFactorEnabled): static
     {
         $this->isTwoFactorEnabled = $isTwoFactorEnabled;
 
         return $this;
+    }
+
+    public function getResetPasswordToken(): ?string
+    {
+        return $this->resetPasswordToken;
+    }
+
+    public function setResetPasswordToken(?string $resetPasswordToken): static
+    {
+        $this->resetPasswordToken = $resetPasswordToken;
+
+        return $this;
+    }
+
+    public function verifyResetPasswordToken(string $twoFactorToken): bool
+    {
+        if($this->resetPasswordToken == $twoFactorToken)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getResetPasswordTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetPasswordTokenExpiresAt;
+    }
+
+    public function setResetPasswordTokenExpiresAt(?\DateTimeImmutable $resetPasswordTokenExpiresAt): static
+    {
+        $this->resetPasswordTokenExpiresAt = $resetPasswordTokenExpiresAt;
+
+        return $this;
+    }
+
+    public function verifyResetPasswordTokenExpiresAt(\DateTimeImmutable $dateTime): bool
+    {
+        if($dateTime >= $this->resetPasswordTokenExpiresAt)
+        {
+           return true;
+        }
+        return false;
     }
 }
