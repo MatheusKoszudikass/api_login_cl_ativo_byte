@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,7 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class PingDatabaseCommand extends Command
 {
-    private $connection;
     protected static $defaultName = 'app:ping-database';
 
     public function __construct()
@@ -29,9 +29,18 @@ class PingDatabaseCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try{
-            $this->connection->execyteQuery('SELECT 1');
-            $output->writeln('banco de dados ativo');
-            return Command::SUCCESS;
+            $connection = DriverManager::getConnection(['url' =>$_ENV['DATABASE_URL']]);
+            $stmt = $connection->prepare("SELECT 1");
+            $result = $stmt->executeQuery();
+
+            $row = $result->fetchAssociative();
+            if ($row) {
+                $output->writeln('Banco de dados ativo!');
+                return Command::SUCCESS;
+            }
+
+            $output->writeln('Falha ao pingar o banco de dados');
+            return Command::FAILURE;
         }catch(\Exception $e){
             $output->writeln('Erro ao pingar o banco de dados:'. $e->getMessage());
             return Command::FAILURE;
