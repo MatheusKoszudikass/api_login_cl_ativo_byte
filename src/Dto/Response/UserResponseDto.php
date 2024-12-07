@@ -2,9 +2,10 @@
 
 namespace App\Dto\Response;
 
+use App\Dto\BaseEntityDto;
 use Doctrine\DBAL\Types\GuidType;
 
-class UserResponseDto
+class UserResponseDto extends BaseEntityDto
 {
     public string $id;
 
