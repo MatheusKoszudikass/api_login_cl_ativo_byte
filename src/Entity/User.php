@@ -20,7 +20,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['userName'])]
 class User extends BaseEntity implements PasswordAuthenticatedUserInterface, UserInterface
 {
-
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -61,7 +60,6 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $resetPasswordTokenExpiresAt = null;
 
-
     public function __construct(
         string $email,
         string $password,
@@ -79,7 +77,6 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $this->cnpjCpfRg = $this->validateCnpjCpf($cnpjCpfRg);
         $this->roles = new ArrayCollection();
     }
-
 
     public function mapUserDto(): UserResponseDto
     {
@@ -104,7 +101,13 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $this->validateEmail($email);
         return $this->email;
     }
+    
+    public function setEmail(string $email): static 
+    {
+        $this->email = $email;
 
+        return $this;
+    }
     public function getPassword(): string
     {
         return $this->password;
@@ -115,9 +118,23 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->firstName === $firstName;
     }
 
+    public function setFirstName(string $firstName): static
+    {
+        $this->firstName = $firstName;
+        
+        return $this;
+    }
+
     public function isLastName(string $lastName): string
     {
         return $this->lastName === $lastName;
+    }
+
+    public function setLastName(string $lastName): static
+    {
+        $this->lastName = $lastName;
+
+        return $this;
     }
 
     public function isUserName(string $userName): string
@@ -125,9 +142,23 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->userName === $userName;
     }
 
+    public function setUserName(string $userName): static
+    {
+        $this->userName = $userName;
+
+        return $this;
+    }
+
     public function isCnpjCpf(string $cnpjCpf): string
     {
         return $this->cnpjCpfRg === $cnpjCpf;
+    }
+
+    public function setCnpjCpf(string $cnpjCpf): static
+    {
+        $this->cnpjCpfRg = $cnpjCpf;
+
+        return $this;
     }
 
     private function validateEmail(string $email): string
