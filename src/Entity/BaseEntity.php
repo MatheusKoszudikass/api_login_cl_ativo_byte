@@ -31,8 +31,12 @@ abstract class BaseEntity
         $this->dateUpdated = new DateTime('now');
         $this->systemAccess = new DateTime('now');
     }
-
     
+    /**
+     * Generates a version 4 UUID according to RFC 4122
+     *
+     * @return string
+     */
     private function generateUuid(): string
     {
         return sprintf(
@@ -48,31 +52,29 @@ abstract class BaseEntity
         );
     }
 
-
+    /**
+     * Sets the system access date to the current date and time
+     */
     public function setSystemAccess() : void 
     {
       $this->systemAccess = new DateTime('now');
     }
 
+    /**
+     * Checks if the object is empty, i.e. if all its public properties are empty
+     *
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        $reflection = new \ReflectionClass($this);
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
 
-    // public function getDateCreated(): DateTimeImmutable
-    // {
-    //     return $this->dateCreated;
-    // }
-
-
-    // public function getDateUpdated(): DateTimeImmutable
-    // {    
-    //     return $this->dateUpdated;
-    // }
-
-    // public function getSystemAccess(): DateTimeImmutable
-    // {
-    //     return $this->systemAccess;
-    // }
-
-    // public function updateDateUpdated(): void
-    // {
-    //     $this->dateUpdated = new DateTimeImmutable('now');
-    // }
+        foreach ($properties as $property) {
+            if (!empty($property->getValue($this))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
