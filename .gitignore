@@ -1,8 +1,6 @@
 
 ###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
+.env
 /migrations
 /php_errors.log
 /public/php_errors.log
@@ -23,3 +21,5 @@ public/php_errors.log
 /phpunit.xml
 .phpunit.result.cache
 ###< phpunit/phpunit ###
+php_errors.log
+
