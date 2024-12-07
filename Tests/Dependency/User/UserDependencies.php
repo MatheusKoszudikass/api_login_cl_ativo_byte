@@ -2,6 +2,7 @@
 
 namespace Tests\Dependency\User;
 
+use App\Entity\User;
 use App\Repository\RoleRepository;
 use App\Service\MapperServiceCreate;
 use App\Service\MapperServiceResponse;
@@ -45,5 +46,12 @@ class UserDependencies extends KernelTestCase
             $mailer,
             $twoFactorAuthService
         ); 
+    }
+
+    public static function findUserByEmail(string $email): ?User
+    {    
+        return static::getContainer()->get(
+            'doctrine')->getManager()->getRepository(
+                User::class)->findOneBy(['email' => $email]);
     }
 }
