@@ -1,0 +1,6 @@
+.env.local
+.env.test.local
+vendor
+tests
+.git
+docker-compose.yaml
