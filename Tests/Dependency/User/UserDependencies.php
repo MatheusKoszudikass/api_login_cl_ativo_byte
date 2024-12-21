@@ -17,11 +17,6 @@ class UserDependencies extends KernelTestCase
 {
     private $container;
 
-    public function __construct()
-    {
-        self::bootKernel();
-    }
-
     public function userRepository(): UserRepository
     {
         $database = new DatabaseTestCase();

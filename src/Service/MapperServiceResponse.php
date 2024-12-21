@@ -4,9 +4,10 @@ namespace App\Service;
 
 use App\Dto\Response\RoleResponseDto;
 use App\Dto\Response\UserResponseDto;
+use App\Result\ResultOperation;
 use App\Entity\Role;
 use App\Entity\User;
-
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 
 class MapperServiceResponse
 {
@@ -20,8 +21,10 @@ class MapperServiceResponse
         return $dto;
     }
 
-    public function mapRole(RoleResponseDto $dto): Role
+    public function mapRole(ResultOperation $response): Role
     {
+        $dto = $response->getData()[0];
+
         $role = new Role( $dto->name, $dto->description);
         $role->getId();
         $role->getName();

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Dto\Create\RoleCreateDto;
+use App\Dto\Response\RoleResponseDto;
 use App\Repository\RoleRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -24,5 +25,11 @@ class RoleController extends AbstractController
         $result = $this->_roleRepostory->addRole($role);
 
         return $this->json($result);
+    }
+
+    #[Route('/api/role/findAll', methods:['GET'], name:'app_role_findAll')]
+    public function findAll():JsonResponse
+    {
+        return $this->json($this->_roleRepostory->findAll());
     }
 }

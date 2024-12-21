@@ -121,19 +121,18 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
         }
     }
 
-    public function getRoles(): ?array
+    public function findRoleAll(): ?ResultOperation
     {
         try {
             $roles = $this->getEntityManager()->getRepository(Role::class)->findAll();
-            $roleResponseDtos = [];
-
-            foreach ($roles as $role) {
-                $roleResponseDto = $this->_mapperServiceResponse->mapRoleToDto($role);
-                $roleResponseDtos[] = $roleResponseDto;
-            }
-            return $roleResponseDtos;
+            // $roleResponseDtos = [];
+            // foreach ($roles as $role) {
+            //     $roleResponseDto = $this->_mapperServiceResponse->mapRoleToDto($role);
+            //     $roleResponseDtos[] = $roleResponseDto;
+            // }
+            return new ResultOperation(true, 'Roles encontradas com sucesso!',  $roles);
         } catch (Exception $exception) {
-            return null;
+            return new ResultOperation(false, 'Erro ao buscar roles:'. $exception->getMessage());
         }
     }
 

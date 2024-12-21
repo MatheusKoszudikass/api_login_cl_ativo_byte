@@ -25,11 +25,11 @@ class EmailService
         $this->_mailer->SMTPSecure = $_SERVER['SMTP_SECURE'];
         $this->_mailer->Port = $_SERVER['SMTP_PORT'];
         $this->_mailer->CharSet = $_SERVER['SMTP_CHARSET'];
+        $this->_mailer->SMTPKeepAlive = $_SERVER['SMTP_KEEPALIVE'];
     }
 
     public function sendEmail($to, $subject, $body)
     {
-        
         try {
         $this->_mailer->setFrom($_SERVER['SMTP_USER'], 'AtivoByte');
         $this->_mailer->addAddress($to);

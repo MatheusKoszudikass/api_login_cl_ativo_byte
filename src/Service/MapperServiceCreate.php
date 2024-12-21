@@ -35,7 +35,7 @@ class MapperServiceCreate
         $dto->lastName = $user->isLastName($dto->lastName);
         $dto->userName = $user->isUserName($dto->userName);
         $dto->cnpjCpfRg = $user->isCnpjCpf($dto->cnpjCpfRg);
-        $dto->roles = $user->getRoleNames();
+        // $dto->roles = $user->getRoleNames();
         return $dto;
     }
 
@@ -52,15 +52,13 @@ class MapperServiceCreate
         // $expiresAt = (new \DateTimeImmutable())->modify('+1 days');
         // $expiresAt = new \DateTimeImmutable('+1 minutes');
         $user->getTwoFactorExpiresAt();
-        $user->setTwoFactorToken( $dto->token);
 
-        foreach ($dto->roles as $roleData) {
-            if (isset($roleData['id']) && isset($roleData['name'])) {
-                $role = new Role($roleData['name'], $roleData['description']);
-                $user->createRole($role);  // Adiciona a role ao usuário
-            }
-        }
-
+        // foreach ($dto->roles as $roleData) {
+        //     if (isset($roleData['id']) && isset($roleData['name'])) {
+        //         $role = new Role($roleData['name'], $roleData['description']);
+        //         $role->addUser($user);
+        //     }
+        // }
         return $user;
     }
 }

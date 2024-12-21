@@ -1,5 +1,6 @@
 <?php
 
+namespace Tests\DataFixtures\Entity;
 use App\Dto\Create\UserCreateDto;
 
 class UserDataTest 

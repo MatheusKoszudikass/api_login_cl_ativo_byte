@@ -30,11 +30,9 @@ class UserCreateDto extends BaseEntityDto
 
     public ?bool $legalRegister = null;
 
-    #[Assert\NotBlank(message: "A senha não pode estar vazia.")]
-    #[Assert\Length(min: 8, max: 50, minMessage: "A senha deve ter pelo menos {{ limit }} caracteres.", maxMessage: "A senha não pode ter mais de {{ limit }} caracteres.")]
+    #[Assert\NotBlank(message: "Nome do usuário não pode estar vazio.")]
+    #[Assert\Length(min: 3, max: 50, minMessage: "O nome do usuário deve ter pelo menos {{ limit }} caracteres.", maxMessage: "O nome do usuário não pode ter mais de {{ limit }} caracteres.")]
     public string $userName = '';
     
     public ?array $roles = [];
-
-    public string $token = '';
 }

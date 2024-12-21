@@ -2,15 +2,12 @@
 
 namespace App\Entity;
 
-use App\Dto\Create\UserCreateDto;
 use App\Dto\Response\UserResponseDto;
 use App\Repository\UserRepository;
-use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -41,8 +38,12 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     #[ORM\Column(length: 50)]
     private ?string $userName = null;
 
-    #[ORM\ManyToMany(targetEntity: "Role", inversedBy: "users", cascade: ["persist"])]
+    // #[ORM\ManyToMany(targetEntity: "Role", inversedBy: "users", cascade: ["persist"])]
+    // #[ORM\JoinTable(name: "user_roles")]
     #[ORM\JoinTable(name: "user_roles")]
+    #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
+    #[ORM\InverseJoinColumn(name: "role_id", referencedColumnName: "id")]
+    #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'users', cascade: ['persist'])]
     private Collection $roles;
 
     #[ORM\Column(length: 255)]
@@ -101,6 +102,11 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $this->validateEmail($email);
         return $this->email;
     }
+
+    public function getEmail(): string {
+
+        return $this->validateEmail($this->email);
+    }
     
     public function setEmail(string $email): static 
     {
@@ -108,6 +114,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
 
         return $this;
     }
+
     public function getPassword(): string
     {
         return $this->password;
@@ -214,15 +221,29 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->isLegalentity ?? false;
     }
 
-    public function createRole(Role $role): void
+    public function addRole(Role $role): static
     {
         if (!$this->roles->contains($role)) {
             $this->roles[] = $role;
         }
+
+        return $this;
+    }    
+    public function getRoles(): array
+    {
+        return $this->roles->toArray();
     }
 
-    public function getRoleNames(): array
-    {
+    public function setRolesName(): array
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Retrieves the roles associated with the user.
+ *
+ * @return array An array of Role objects associated with the user.
+ */
+
+/******  165c7d3d-fbda-4ad8-ac16-6028d5df3945  *******/    {
+
         return $this->roles->map(fn(Role $role) => $role->getName())->toArray();
     }
 
@@ -239,11 +260,6 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     public function getfullName(): string
     {
         return $this->firstName . ' ' . $this->lastName;
-    }
-
-    public function getRoles(): array
-    {
-        return $this->roles->toArray();
     }
 
     public function eraseCredentials(): void

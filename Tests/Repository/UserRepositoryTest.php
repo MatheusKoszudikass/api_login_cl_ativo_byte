@@ -2,12 +2,9 @@
 
 use App\Dto\Create\UserCreateDto;
 use App\Repository\UserRepository;
-use App\Result\ResultOperation;
-use App\Service\TwoFactorAuthService;
-use PhpParser\Node\Expr\Cast\Object_;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Validator\Tests\Fixtures\ToString;
 use Tests\Dependency\User\UserDependencies;
+use Tests\DataFixtures\Entity\UserDataTest;
 
 class UserRepositoryTest extends KernelTestCase
 {
@@ -92,6 +89,21 @@ class UserRepositoryTest extends KernelTestCase
         $this->assertTrue($result->isSuccess());
         $this->assertSame(
             "Usuário valídado com sucesso!", $result->getMessage());
+
+        $this->testUserExist();
+    }
+
+    private function testUserExist(): void
+    {
+        $result = $this->_userRepository->userExists('teste');
+
+        $this->assertNotNull($result);
+        $this->assertFalse($result->isSuccess());
+
+        $result = $this->_userRepository->userExists(UserDataTest::createUser()->email);
+
+        $this->assertNotNull($result);
+        $this->assertTrue($result->isSuccess());
 
         $this->testVerifyTwoTokenFactorExpired();
     }
