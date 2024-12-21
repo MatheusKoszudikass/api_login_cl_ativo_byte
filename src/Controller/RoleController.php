@@ -19,10 +19,10 @@ class RoleController extends AbstractController
         $this->_roleRepostory = $roleRepository;
     }
 
-    #[Route('/api/role/add', name: 'app_role_add')]
+    #[Route('/api/role/add', methods: ['POST'], name: 'app_role_add')]
     public function addRole(#[MapRequestPayload] RoleCreateDto $role): JsonResponse
     {
-        $result = $this->_roleRepostory->addRole($role);
+        $result = $this->_roleRepostory->createRole($role);
 
         return $this->json($result);
     }
