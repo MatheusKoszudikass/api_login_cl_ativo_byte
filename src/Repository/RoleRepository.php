@@ -43,7 +43,7 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
 
             $result = $this->_mapperServiceResponse->mapRoleToDto($role);
 
-            return new ResultOperation(true, 'Role criado com sucesso', [$result]);
+            return new ResultOperation(true, 'Role criado com sucesso');
 
         } catch (Exception $exception) {
             return new ResultOperation(false, $exception->getMessage());
