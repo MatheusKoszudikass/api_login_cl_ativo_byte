@@ -1,34 +1,31 @@
+---
 deployment:
-  task:
-    # Definindo o caminho do deploy
+  tasks:
+    # Definir o caminho do deploy
     - export DEPLOYPATH=/home/ativobyt/api.cliente.ativobyte.com.br
 
     # Copiar arquivos de configuração
-    - /bin/cp -i .env $DEPLOYPATH
-    - /bin/cp -i .htaccess $DEPLOYPATH
-    - /bin/cp -i .project $DEPLOYPATH
-    - /bin/cp -i .composer.json $DEPLOYPATH
-    - /bin/cp -i .composer.lock $DEPLOYPATH
-    - /bin/cp -i .symfony.lock $DEPLOYPATH
+    - /bin/cp -f .env $DEPLOYPATH
+    - /bin/cp -f .htaccess $DEPLOYPATH
+    - /bin/cp -f composer.json $DEPLOYPATH
+    - /bin/cp -f composer.lock $DEPLOYPATH
+    - /bin/cp -f symfony.lock $DEPLOYPATH
 
     # Copiar diretórios
-    - /bin/cp -i -R bin $DEPLOYPATH
-    - /bin/cp -i -R config $DEPLOYPATH
-    - /bin/cp -i -R migrations $DEPLOYPATH
-    - /bin/cp -i -R public $DEPLOYPATH
-    - /bin/cp -i -R src $DEPLOYPATH
-    - /bin/cp -i -R var $DEPLOYPATH
+    - /bin/cp -rf bin $DEPLOYPATH
+    - /bin/cp -rf config $DEPLOYPATH
+    - /bin/cp -rf migrations $DEPLOYPATH
+    - /bin/cp -rf public $DEPLOYPATH
+    - /bin/cp -rf src $DEPLOYPATH
+    - /bin/cp -rf var $DEPLOYPATH
 
-    # Atualizar dependências do Composer (caso necessário)
+    # Atualizar dependências do Composer
     - cd $DEPLOYPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader
 
     # Limpar e aquecer o cache do Symfony
     - cd $DEPLOYPATH && php bin/console cache:clear --env=prod --no-warmup
     - cd $DEPLOYPATH && php bin/console cache:warmup --env=prod
 
-    # Ajustar permissões de arquivos, se necessário
-    - chown -R user:user $DEPLOYPATH
-    - chmod -R 755 $DEPLOYPATH
-
-    # Outras tarefas específicas de deploy podem ser adicionadas aqui
-    # - cd $DEPLOYPATH && bin/console cache:clear --env=prod
+    # Ajustar permissões de arquivos
+    - find $DEPLOYPATH -type d -exec chmod 755 {} \;
+    - find $DEPLOYPATH -type f -exec chmod 644 {} \;
