@@ -1,7 +1,7 @@
 deployment:
   task:
     # Definindo o caminho do deploy
-    - export DEPLOYPATH=/home/api.cliente.ativobyte.com.br/
+    - export DEPLOYPATH=/home/ativobyt/api.cliente.ativobyte.com.br
 
     # Copiar arquivos de configuração
     - /bin/cp -i .env $DEPLOYPATH
@@ -21,6 +21,10 @@ deployment:
 
     # Atualizar dependências do Composer (caso necessário)
     - cd $DEPLOYPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader
+
+    # Limpar e aquecer o cache do Symfony
+    - cd $DEPLOYPATH && php bin/console cache:clear --env=prod --no-warmup
+    - cd $DEPLOYPATH && php bin/console cache:warmup --env=prod
 
     # Ajustar permissões de arquivos, se necessário
     - chown -R user:user $DEPLOYPATH
