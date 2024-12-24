@@ -1,25 +1,16 @@
 
 ###> symfony/framework-bundle ###
 .env
-/migrations
-/php_errors.log
-/public/php_errors.log
-/vendor
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
+migrations
+php_errors.log
+public/php_errors.log
+vendor
+config/secrets/prod/prod.decrypt.private.php
+public/bundles/
+var/
+vendor/
 ###< symfony/framework-bundle ###
 public/php_errors.log
-
 ###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
 ###< symfony/phpunit-bridge ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
-.phpunit.result.cache
-###< phpunit/phpunit ###
 php_errors.log
-
