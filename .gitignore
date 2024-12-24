@@ -1,6 +1,5 @@
-
-###> symfony/framework-bundle ###
-env
+.env
+.env.local
 migrations
 php_errors.log
 public/php_errors.log
@@ -9,5 +8,3 @@ config/secrets/prod/prod.decrypt.private.php
 public/bundles/
 var/
 vendor/
-###> symfony/phpunit-bridge ###
-###< symfony/phpunit-bridge ###
