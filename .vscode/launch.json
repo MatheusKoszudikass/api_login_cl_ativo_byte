@@ -12,7 +12,7 @@
                 "-S",
                 "localhost:8000",
                 "-t",
-                "."
+                "public"
             ],
             "port": 9003,
             "serverReadyAction": {
