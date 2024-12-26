@@ -60,7 +60,7 @@ class UserController extends AbstractController
         return $this->json($this->_userRepositoryInterface->validateUser($userDto));
     }
 
-    #[Route(('/api/user/exist'), methods: ['POST'], name: 'api_user_verifyUserExist')]
+    #[Route('/api/user/exist', methods: ['POST'], name: 'api_user_verifyUserExist')]
     public function verifyUserExist(Request $request): JsonResponse
     {
         $payload = json_decode($request->getContent(), true);
