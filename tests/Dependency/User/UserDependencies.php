@@ -11,7 +11,7 @@ use App\Service\TwoFactorAuthService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use App\Repository\UserRepository;
-use App\Tests\Dependency\DatabaseTestCase;
+use Tests\Dependency\DatabaseTestCase;
 
 class UserDependencies extends KernelTestCase
 {
