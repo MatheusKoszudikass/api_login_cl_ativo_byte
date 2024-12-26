@@ -32,36 +32,72 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
 
     public function createRole(RoleCreateDto $role): ResultOperation
     {
-        if ($role === null) {
-            return new ResultOperation(false, 'Role não pode ser nulo');
+        if ($role->isEmpty()) {
+            return new ResultOperation(false, 'Role não pode ser null.');
         }
 
         try {
+            $result = $this->roleExists($role->name);
+            if ($result->isSuccess() == true) return $result;
+            
             $role = $this->_mapperServiceCreate->mapRole($role);
             $this->getEntityManager()->persist($role);
             $this->getEntityManager()->flush();
 
             $result = $this->_mapperServiceResponse->mapRoleToDto($role);
 
-            return new ResultOperation(true, 'Role criado com sucesso');
+            return new ResultOperation(true, 'Role criado com sucesso.');
 
         } catch (Exception $exception) {
             return new ResultOperation(false, $exception->getMessage());
         }
     }
 
-    public function updateRole(RoleCreateDto $role): ResultOperation
+    public function roleExists(string $name): ResultOperation
     {
-        if ($role === null) {
-            return new ResultOperation(false, 'Role não pode ser nulo');
-        }
+        if($name == null || $name === '') return new ResultOperation(
+            false, 'Nome null.');
 
         try {
-            $role = $this->_mapperServiceCreate->mapRole($role);
-            $this->getEntityManager()->persist($role);
+            $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+            $queryBuilder->select('r')
+                ->from(Role::class, 'r')
+                ->where('r.name = :name')
+                ->setParameter('name', $name);
+                
+            if($queryBuilder->getQuery()->getOneOrNullResult() !== null) return new ResultOperation(
+                true, 'Role encontrado com sucesso.');
+            
+            return new ResultOperation(false, 'Role não encontrado.');
+
+        } catch (Exception $exception) {
+            return new ResultOperation(false, 'Erro ao buscar role pelo nome.'. $exception->getMessage());
+        }     
+
+    }
+
+    public function updateRole(string $id, RoleCreateDto $roleDto): ResultOperation
+    {
+        if(empty($id)|| $id == null) return new ResultOperation(
+            false, 'Identificador não pode ser null.');
+
+        if($roleDto == null || $roleDto->isEmpty()) return new ResultOperation(
+            false, 'Role não pode ser null.');
+        
+
+        try {
+            $roleExists = $this->getEntityManager()->getRepository(Role::class)->findOneBy(['id' => $id]);
+
+            if($roleExists == null) return new ResultOperation(
+                false, "Nenhuma role encontrada com o identificador fornecido.");
+
+            $roleExists->setName($roleDto->name);
+            $roleExists->setDescription($roleDto->description);
+
+            $this->getEntityManager()->persist($roleExists);
             $this->getEntityManager()->flush();
 
-            return new ResultOperation(true, 'Role atualizado com sucesso');
+            return new ResultOperation(true, 'Role atualizado com sucesso.');
 
         } catch (Exception $exception) {
             return new ResultOperation(false, $exception->getMessage());
@@ -71,22 +107,19 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
 
     public function findRoleById(string $id): ?ResultOperation
     {
-        if ($id == null) {
-            return new ResultOperation(false, 'O identificador da role não pode estar vazio.');
-        }
+        if (empty($id)) return new ResultOperation(
+            false, 'Identificador não pode ser null.');
 
         try {
-            
             $role = $this->getEntityManager()->getRepository(Role::class)->findOneBy(
                 ['id'=> $id]);
            
-            if ($role == null) {
-                return new ResultOperation(false, 'Nenhuma role encontrada com o identificador fornecido.');
-            }
+            if ($role == null) return new ResultOperation(
+                false, 'Nenhuma role encontrada com o identificador fornecido.');
 
             $result = $this->_mapperServiceResponse->mapRoleToDto($role);
 
-            return new ResultOperation(true, 'Role encontrada com sucesso!', data: [$result]);
+            return new ResultOperation(true, 'Role encontrado com sucesso.', data: [$result]);
 
         } catch (Exception $e) {
             
@@ -96,10 +129,8 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
 
     public function findRoleByName(string $name): ?ResultOperation
     {
-        if($name == null)
-        {
-            return new ResultOperation(false, 'O nome da role não pode estar vazio.');
-        }
+        if(empty($name)) return new ResultOperation(
+            false, 'Identificador não pode ser null.');
 
         try{
 
@@ -108,12 +139,12 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
 
             if($role == null)
             {
-                return new ResultOperation(false, 'Nenhuma role encontrada com o nome fornecido.');
+                return new ResultOperation(false, 'Nenhuma role encontrada com o identificador fornecido.');
             }
 
             $result = $this->_mapperServiceResponse->mapRoleToDto($role);
 
-            return new ResultOperation(true, 'Role encontrada com sucesso!', data: [$result]);
+            return new ResultOperation(true, 'Role encontrado com sucesso.', data: [$result]);
 
         }catch(Exception $e){
 
@@ -125,12 +156,12 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
     {
         try {
             $roles = $this->getEntityManager()->getRepository(Role::class)->findAll();
-            // $roleResponseDtos = [];
-            // foreach ($roles as $role) {
-            //     $roleResponseDto = $this->_mapperServiceResponse->mapRoleToDto($role);
-            //     $roleResponseDtos[] = $roleResponseDto;
-            // }
-            return new ResultOperation(true, 'Roles encontradas com sucesso!',  $roles);
+            $roleResponseDtos = [];
+            foreach ($roles as $role) {
+                $roleResponseDto = $this->_mapperServiceResponse->mapRoleToDto($role);
+                $roleResponseDtos[] = $roleResponseDto;
+            }
+            return new ResultOperation(true, 'Roles sucesso.',  $roleResponseDtos);
         } catch (Exception $exception) {
             return new ResultOperation(false, 'Erro ao buscar roles:'. $exception->getMessage());
         }
@@ -138,44 +169,19 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
 
     public function deleteRole(string $id): ResultOperation
     {
-        if ($id == null) {
-            return new ResultOperation(false, 'Id não pode ser nulo');
-        }
+        if (empty($id)) return new ResultOperation(
+                false, 'Identificador não pode ser null.');
 
         try {
-
             $role = $this->getEntityManager()->getRepository(Role::class)->find($id);
+            if($role == null)return new ResultOperation(
+                false, 'Nenhuma role encontrada com o identificador fornecido.');
+
             $this->getEntityManager()->remove($role);
             $this->getEntityManager()->flush();
-            return new ResultOperation(true, 'Role deletado com sucesso');
+            return new ResultOperation(true, 'Role deletado com sucesso.');
         } catch (Exception $exception) {
             return new ResultOperation(false, $exception->getMessage());
         }
     }
-
-
-    //    /**
-    //     * @return Role[] Returns an array of Role objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('r.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Role
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

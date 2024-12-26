@@ -140,12 +140,12 @@ class UserRepositoryTest extends KernelTestCase
         $result = $this->_userRepository->updateUser('', $userUpdate);
         $this->assertNotNull($result);
         $this->assertFalse($result->isSuccess());
-        $this->assertSame('Identificador não pode ser nulo', $result->getMessage());
+        $this->assertSame('Identificador não pode ser null.', $result->getMessage());
 
         $result = $this->_userRepository->updateUser($user->getId(), new UserCreateDto());
         $this->assertNotNull($result);
         $this->assertFalse($result->isSuccess());
-        $this->assertSame('Usuário não pode ser null', $result->getMessage());
+        $this->assertSame('Usuário não pode ser null.', $result->getMessage());
 
         $result = $this->_userRepository->updateUser($user->getId(),$userUpdate);
         $this->assertNotNull($result);

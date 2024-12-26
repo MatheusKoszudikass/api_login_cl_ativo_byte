@@ -53,6 +53,12 @@ class Role extends BaseEntity
     {
         return $this->description;
     }
+
+    public function setDescription(string $description): static 
+    {
+        $this->description = $description;
+        return $this;
+    }
     public function addUser(User $user): static
     {
         $this->users[] = $user;
