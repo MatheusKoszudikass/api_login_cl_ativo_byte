@@ -518,9 +518,9 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     public function updateUser(string $id, UserCreateDto $userDto): ResultOperation
     {
         if (empty($id) || $id === null)
-            return new ResultOperation(false, 'Identificador não pode ser nulo');
+            return new ResultOperation(false, 'Identificador não pode ser null.');
         if ($userDto == null || $userDto->isEmpty())
-            return new ResultOperation(false, 'Usuário não pode ser null');
+            return new ResultOperation(false, 'Usuário não pode ser null.');
 
         try {
             $userExist = $this->getEntityManager()->getRepository(User::class)->findOneBy(['id' => $id]);
