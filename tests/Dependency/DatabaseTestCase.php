@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Tests\Dependency;
+namespace Tests\Dependency;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
