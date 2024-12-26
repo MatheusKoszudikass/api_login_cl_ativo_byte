@@ -3,13 +3,14 @@
 namespace App\Dto\Create;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Dto\BaseEntityDto;
 
-class RoleCreateDto
+class RoleCreateDto extends BaseEntityDto
 {
-    public string $id;
+    public string $id = '';
 
     #[Assert\NotBlank]
-    public string $name;
+    public string $name = '';
 
-    public string $description;
+    public string $description = '';
 }
