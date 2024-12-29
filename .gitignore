@@ -1,4 +1,4 @@
-.env.local
+.phpunit.result.cache
 migrations
 php_errors.log
 public/php_errors.log
