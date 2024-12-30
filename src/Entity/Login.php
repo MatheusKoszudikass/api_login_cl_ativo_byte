@@ -20,6 +20,9 @@ class Login extends BaseEntity
     #[ORM\Column(length: 255)]
     private ?string $lastLoginIp = null;
 
+    #[ORM\Column]
+    private ?bool $remember = false;
+
     public function __construct(string $email, string $passwordHash, string $lastLoginIp) 
     {
         parent::__construct();
@@ -80,15 +83,12 @@ class Login extends BaseEntity
     {
         $currentTime = new \DateTime('now');
         
-        // Validação explícita do parâmetro.
         if (!$lastLoginAttempt) {
             throw new \InvalidArgumentException('O parâmetro $lastLoginAttempt não pode ser nulo.');
         }
     
-        // Calcula a diferença entre a tentativa anterior e o momento atual.
         $interval = $currentTime->diff($lastLoginAttempt);
     
-        // Atualiza se passou mais de 1 minuto.
         if ($interval->i > 0 || $interval->h > 0 || $interval->d > 0) {
             $this->lastLoginAttempt = $currentTime;
         }
@@ -104,6 +104,18 @@ class Login extends BaseEntity
     public function setLastLoginIp(string $lastLoginIp): static
     {
         $this->lastLoginIp = $lastLoginIp;
+
+        return $this;
+    }
+
+    public function isRemember(): ?bool
+    {
+        return $this->remember;
+    }
+
+    public function setRemember(bool $remember): static
+    {
+        $this->remember = $remember;
 
         return $this;
     }
