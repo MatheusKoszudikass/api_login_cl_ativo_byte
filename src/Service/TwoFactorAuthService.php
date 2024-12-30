@@ -21,10 +21,10 @@ class TwoFactorAuthService
         return $this->_tokenGeneratorInterface->generateToken();
     }
 
-    public function generateTokenJwt(array $payload): string
+    public function generateTokenJwt(array $payload, bool $remember): string
     {
         $issuedAt = time();
-        $expire = $issuedAt + 86400;
+        $expire = $remember ? $issuedAt + 60 * 60 * 24 * 30 : $issuedAt + 60 * 60;
 
         $payload['iat'] = $issuedAt;
         $payload['exp'] = $expire;
@@ -34,6 +34,12 @@ class TwoFactorAuthService
 
     public function verifyToken(string $token): stdClass
     {
-        return JWT::decode($token, new Key($_SERVER['JWT_SECRET'], 'HS256'));
+        return JWT::decode(
+            $token, new Key($_SERVER['JWT_SECRET'], 'HS256'));
+    }
+
+    public function invalidatingToken(string $token): string
+    {
+         return '';
     }
 }
