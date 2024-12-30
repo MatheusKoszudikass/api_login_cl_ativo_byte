@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Tests\Fixtures\ToString;
 
 class LoginController extends AbstractController
 {
@@ -32,7 +31,7 @@ class LoginController extends AbstractController
      *
      * @throws Exception if the email or password is incorrect or if the user is deactivated.
      */
-    #[Route('/api/login', methods: ['POST'], name: 'login')]
+    #[Route('/api/auth/login', methods: ['POST'], name: 'login')]
     public function Login(#[MapRequestPayload] LoginDto $login, Request $request): JsonResponse
     {
         $login->lastLoginIp = $request->getClientIp();
@@ -43,7 +42,7 @@ class LoginController extends AbstractController
             $token = $result->getData()[0];
 
             $response = new JsonResponse();
-            $response->headers->setCookie($this->createCookie($token));
+            $response->headers->setCookie($this->createCookie($token, $login->remember));
             $response->setData([
                 'message' => $result->getMessage(),
                 'status' => $result->isSuccess()
@@ -68,12 +67,14 @@ class LoginController extends AbstractController
      *
      * @return Cookie
      */
-    private function createCookie(string $token): Cookie
+    private function createCookie(string $token, bool $remember): Cookie
     {
+        $expire = $remember ? time() + 60 * 60 * 24 * 30 : 0;
+
         return new Cookie(
             $_ENV['COOKIE_NAME'],                            // Cookie name
             $token,                                        // Token value
-            time() + $_ENV['COOKIE_EXPIRATION_TIME'],    // Expiration time(1, for example)
+            $expire,                                     // Expiration time(1, for example)
             $_ENV['COOKIE_PATH'],                         // Cookie path, where it will be accessible("/" means accessible throughout the application)
             $_ENV['COOKIE_DOMAIN'],                    // Cookie domain(leave null for the current domain)
             $_ENV['COOKIE_SECURE'],                   // Secure: send only if using HTTTPS
@@ -83,6 +84,18 @@ class LoginController extends AbstractController
         );
     }
     
+    #[Route('/api/auth/findUser', methods: ['GET'], name: 'login_findUser')]	
+    public function findUser(Request $request): JsonResponse
+    {
+        $token = $request->cookies->get('session');
+
+        if ($token != null) {
+            $result = $this->_loginRepostory->findUserJwt($token);
+            return $this->json($result, 200);
+        }
+
+        return $this->json(false, 200);
+    }
 
     /**
      * Verifies a token JWT and returns a boolean indicating if the token is valid or not.
@@ -104,6 +117,26 @@ class LoginController extends AbstractController
             } catch (Exception $e) {
                 return $this->json(false, 400);
             }
+        }
+        return $this->json(false, 200);
+    }
+
+    #[Route ('/api/auth/logout', methods: ['GET'], name: 'login_logout')]
+    public function logout(Request $request): JsonResponse
+    {
+        $token = $request->cookies->get('session');
+        
+        if ($token != null) {
+           $result = $this->_loginRepostory->validateTokenJwt($token);
+
+           if($result->isSuccess() == true) {
+            $response = new JsonResponse();
+            $response->headers->clearCookie($_ENV['COOKIE_NAME'], '/', $_ENV['COOKIE_DOMAIN']);
+            return $response->setData([
+                'message' => 'Logout ',
+                'status' => $result->isSuccess()
+            ]);
+           }
         }
         return $this->json(false, 200);
     }
