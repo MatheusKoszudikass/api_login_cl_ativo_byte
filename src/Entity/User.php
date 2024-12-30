@@ -87,8 +87,8 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $userDto->firstName = $this->firstName;
         $userDto->lastName = $this->lastName;
         $userDto->userName = $this->userName;
-        $userDto->cnpjCpfRg =$this->cnpjCpfRg;
-        $userDto->token = $this->twoFactorToken;
+        $userDto->cnpjCpfRg = $this->cnpjCpfRg;
+        $userDto->legalRegister = $this->isLegalEntity;
         return $userDto;
     }
 
