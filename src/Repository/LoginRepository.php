@@ -14,7 +14,7 @@ use App\Service\TwoFactorAuthService;
 use Exception;
 use App\Service\MapperService;
 use App\Service\EmailService;
-use App\Service\MapperServiceCreate;
+use App\Service\MapperServiceResponse;
 
 /**
  * @extends ServiceEntityRepository<Login>
@@ -22,26 +22,26 @@ use App\Service\MapperServiceCreate;
 class LoginRepository extends ServiceEntityRepository implements LoginRepositoryInterface
 {
     private MapperService $_mapperService;
-
-    private MapperServiceCreate $_mapperServiceCreate;
     private EmailService $_mailer;
     private TwoFactorAuthService $_twoFactorAuthService;
     private UserRepositoryInterface $_userRepository;
 
+    private MapperServiceResponse $_mapperServiceResponse;
+
     public function __construct(
         ManagerRegistry $registry,
         MapperService $mapperService,
-        MapperServiceCreate $mapperServiceCreate,
         EmailService $mailer,
         TwoFactorAuthService $twoFactorAuthService,
-        UserRepositoryInterface $userRepository
+        UserRepositoryInterface $userRepository,
+        MapperServiceResponse $mapperServiceResponse
     ) {
         parent::__construct($registry, Login::class);
         $this->_mapperService = $mapperService;
-        $this->_mapperServiceCreate = $mapperServiceCreate;
         $this->_mailer = $mailer;
         $this->_twoFactorAuthService = $twoFactorAuthService;
         $this->_userRepository = $userRepository;
+        $this->_mapperServiceResponse = $mapperServiceResponse;
     }
 
     /**
@@ -76,13 +76,9 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
                 'ip' => $loginDto->lastLoginIp
             ];
 
-            if ($this->verifyLastLoginAttempt($loginDto)) { 
+            $this->verifyLastLoginAttempt($loginDto);
 
-                $token =  $this->_twoFactorAuthService->generateTokenJwt($userData);
-                return new ResultOperation(true, 'Login realizado com sucesso', [$token]);
-            }
-
-            $token =  $this->_twoFactorAuthService->generateTokenJwt($userData);
+            $token =  $this->_twoFactorAuthService->generateTokenJwt($userData, $loginDto->remember);
 
             return new ResultOperation(
                 true,
@@ -92,6 +88,29 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         } catch (Exception $e) {
 
             return new ResultOperation(false, 'Erro login: ' . $e->getMessage());
+        }
+    }
+
+
+    public function findUserJwt(string $token): ResultOperation
+    {
+        if($token == null) return new ResultOperation(false, 'Token nao pode ser null');
+
+        try{
+
+            $decodedToken  = $this->_twoFactorAuthService->verifyToken($token);
+
+            if($decodedToken  == null ) return new ResultOperation(false, 'Token nao encontrado');
+
+            $user = $this->_userRepository->findUserByEmailOrUsername($decodedToken->email);
+
+            if($user == null) return new ResultOperation(false, 'Usuário nao encontrado');
+            
+            $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
+            return new ResultOperation(true, 'Usuário encontrado com sucesso', [$userDto]);
+
+        }catch(Exception $e){
+            return new ResultOperation(false, 'Erro ao buscar usuario: ' . $e->getMessage());
         }
     }
 
@@ -127,6 +146,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }
 
         $login->setLastLoginAttempt($login->getLastLoginAttempt());
+        $login->setRemember($loginDto->remember);
         $this->persistLogin($login);
         
         return false;
@@ -227,6 +247,19 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }catch(Exception $e) {
 
             return new ResultOperation(true, 'Erro:'. $e->getMessage());
+        }
+    }
+
+    public function logaut(?string $token): ResultOperation
+    {
+        if(empty($token)) return new ResultOperation(false, 'Token nao pode ser nulo');
+
+        try{
+            $result = $this->_twoFactorAuthService->invalidatingToken($token);
+            return new ResultOperation(true, 'Deslogado com sucesso', [$result]);
+
+        }catch (Exception $e){
+            return new ResultOperation(false, 'Erro ao deslogar: ' . $e->getMessage());
         }
     }
 
