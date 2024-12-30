@@ -259,7 +259,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                 $userDto = $this->updateToken($user, $token);
 
                 // Envia um novo email com o token atualizado
-                $mensagem = $this->sentMessageCreateUser($userDto->firstName . ' ' . $userDto->lastName, $userDto->token);
+                $mensagem = $this->sentMessageCreateUser($userDto->firstName . ' ' . $userDto->lastName, $token);
                 $this->_mailer->sendEmail($userDto->email, 'AtivoByte - Cadastrado', $mensagem);
 
                 // Retorna uma mensagem de falha indicando que o token expirou, mas um novo foi enviado
@@ -339,7 +339,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                     $token = $this->_twoFactorAuthService->generateToken();
                     // Atualiza o token no usuário e mapeia para um DTO
                     $userDto = $this->updateToken($user, $token);
-                    $this->sendTwoFactorActivationEmail($userDto);
+                    $this->sendTwoFactorActivationEmail($userDto, $token);
                 }
                 return new ResultOperation(false, 'Conta não ativada, verifique o email cadastrado!');
             }
@@ -446,7 +446,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
      * @param string $identifier O email ou nome de usuário a ser procurado
      * @return User|null O usuário encontrado ou null caso não encontre
      */
-    private function findUserByEmailOrUsername(string $identifier): ?User
+    public function findUserByEmailOrUsername(string $identifier): ?User
     {
         $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['email' => $identifier]);
 
@@ -462,9 +462,9 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
      *
      * @param UserResponseDto $userDto O DTO do usuário que precisa ativar sua conta
      */
-    private function sendTwoFactorActivationEmail(UserResponseDto $userDto): void
+    private function sendTwoFactorActivationEmail(UserResponseDto $userDto, $token): void
     {
-        $mensagem = $this->sendWelcomeMessage($userDto->firstName, $userDto->token);
+        $mensagem = $this->sendWelcomeMessage($userDto->firstName, $token);
         $this->_mailer->sendEmail($userDto->email, 'AtivoByte - Ative sua conta', $mensagem);
     }
 

@@ -19,6 +19,7 @@ interface UserRepositoryInterface
     public function verifyTokenExpiredRecoveryAccount(User $user): bool; // Verificar se o token de redefinição de senha expirou
     public function updateUser(string $id, UserCreateDto $user): ResultOperation; // Atualizar informações do usuário
     public function deleteUserById(string $id): ResultOperation; // Remover usuário por ID
+    public function findUserByEmailOrUsername(string $identifier): ?User; // Buscar usuário por email ou nome de usuário
     public function findUserById(string $id): ?ResultOperation; // Buscar usuário por ID
     public function findUserByEmail(string $email): ?ResultOperation; // Buscar usuário por email
     public function findUserByUserName(string $userName): ?ResultOperation; // Buscar usuário por nome de usuário
