@@ -19,7 +19,7 @@ class UserResponseDto extends BaseEntityDto
 
     public ?string $userName;
 
-    public ?string $token;
+    public ?string $legalRegister;
 
     public array $roles = [];
 }
