@@ -11,7 +11,7 @@ class MapperService
     public function mapLogin(LoginDto $dto): Login
     {
         $login = new Login(
-            $dto->email_userName,
+            $dto->emailUserName,
             $dto->password,
             $dto->lastLoginIp
         );
@@ -22,8 +22,7 @@ class MapperService
     public function mapLoginDto(Login $login): LoginDto
     {
         $dto = new LoginDto();
-        $dto->email_userName = $login->getEmailUserName();
-        $dto->password = $login->getPasswordHash();
+        $dto->emailUserName = $login->getEmailUserName();
         $dto->lastLoginIp = $login->getLastLoginIp();
 
         return $dto;
