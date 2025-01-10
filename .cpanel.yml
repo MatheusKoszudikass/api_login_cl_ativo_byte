@@ -5,19 +5,19 @@ deployment:
     - export DEPLOYPATH=/home/ativobyt/api.cliente.ativobyte.com.br/
 
     # Copiar arquivos de configuração
-    - /bin/cp /home/ativobyt/repositories/api_login_cl_ativo_byte/.env $DEPLOYPATH
-    - /bin/cp /home/ativobyt/repositories/api_login_cl_ativo_byte/.htaccess $DEPLOYPATH
-    - /bin/cp /home/ativobyt/repositories/api_login_cl_ativo_byte/composer.json $DEPLOYPATH
-    - /bin/cp /home/ativobyt/repositories/api_login_cl_ativo_byte/composer.lock $DEPLOYPATH
-    - /bin/cp /home/ativobyt/repositories/api_login_cl_ativo_byte/symfony.lock $DEPLOYPATH
+    - /bin/cp .env $DEPLOYPATH
+    - /bin/cp .htaccess $DEPLOYPATH
+    - /bin/cp composer.json $DEPLOYPATH
+    - /bin/cp composer.lock $DEPLOYPATH
+    - /bin/cp symfony.lock $DEPLOYPATH
 
     # Copiar diretórios
-    - /bin/cp -R /home/ativobyt/repositories/api_login_cl_ativo_byte/bin $DEPLOYPATH
-    - /bin/cp -R /home/ativobyt/repositories/api_login_cl_ativo_byte/migrations $DEPLOYPATH
-    - /bin/cp -R /home/ativobyt/repositories/api_login_cl_ativo_byte/config $DEPLOYPATH
-    - /bin/cp -R /home/ativobyt/repositories/api_login_cl_ativo_byte/public $DEPLOYPATH
-    - /bin/cp -R /home/ativobyt/repositories/api_login_cl_ativo_byte/src $DEPLOYPATH
-    - /bin/cp -R /home/ativobyt/repositories/api_login_cl_ativo_byte/var $DEPLOYPATH
+    - /bin/cp -R bin $DEPLOYPATH
+    - /bin/cp -R migrations $DEPLOYPATH
+    - /bin/cp -R config $DEPLOYPATH
+    - /bin/cp -R public $DEPLOYPATH
+    - /bin/cp -R src $DEPLOYPATH
+    - /bin/cp -R var $DEPLOYPATH
 
     # Atualizar dependências do Composer
     - cd $DEPLOYPATH && composer install --no-dev --optimize-autoloader
