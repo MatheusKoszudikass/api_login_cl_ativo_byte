@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Login;
+use App\Entity\User;
 use App\Dto\Create\UserCreateDto;
 use App\Dto\LoginDto;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -64,7 +65,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         try {
 
             $user = new UserCreateDto();
-            $user->email = $loginDto->email_userName;
+            $user->email = $loginDto->emailUserName;
             $user->password = $loginDto->password;
 
             $result = $this->_userRepository->validateUser($user);
@@ -138,7 +139,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
      */
     private  function verifyLastLoginAttempt(LoginDto $loginDto): bool
     {
-        $login = $this->findLogin($loginDto->email_userName);
+        $login = $this->findLogin($loginDto->emailUserName);
 
         if ($login == null) {
             $this->persistLogin($this->_mapperService->mapLogin($loginDto));
@@ -214,16 +215,13 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
             if(!filter_var($email_username, FILTER_VALIDATE_EMAIL))
                 return new ResultOperation(false, 'Verifique o e-mail!');
 
-            $result = $this->_userRepository->findUserByEmail($email_username);
-            if($result->isSuccess() == false)return $result;
-             
-            $data = $result->getData();
-            $user = $data[0];
+            $user = $this->findUserByEmail($email_username);
+            if($user == null)return new ResultOperation(false, 'Usuário nao encontrado');
+            
 
             if($this->_userRepository->verifyTwoTokenFactorExpired($user, $email_username) == true)
                return new ResultOperation(false, 'Conta não ativada, verifique o email cadastrado!');
-
-
+            
             if($this->_userRepository->verifyTokenExpiredRecoveryAccount($user) == true)
                 return new ResultOperation(true, 'Verifique seu e-mail!');
              
@@ -250,17 +248,10 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }
     }
 
-    public function logaut(?string $token): ResultOperation
+    private function findUserByEmail(string $email): ?User
     {
-        if(empty($token)) return new ResultOperation(false, 'Token nao pode ser nulo');
-
-        try{
-            $result = $this->_twoFactorAuthService->invalidatingToken($token);
-            return new ResultOperation(true, 'Deslogado com sucesso', [$result]);
-
-        }catch (Exception $e){
-            return new ResultOperation(false, 'Erro ao deslogar: ' . $e->getMessage());
-        }
+        return $this->getEntityManager()->getRepository(User::class)
+        ->findOneBy(['email' => $email]);
     }
 
     /**

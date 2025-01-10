@@ -2,12 +2,10 @@
 
 namespace App\Dto;
 
-use phpDocumentor\Reflection\Types\Boolean;
-
 class LoginDto
 {
-    public string $email_userName;
-    public string $password;
-    public bool $remember;
-    public string $lastLoginIp;
+    public string $emailUserName = '';
+    public string $password = '';
+    public bool $remember = false;
+    public string $lastLoginIp = '';
 }
