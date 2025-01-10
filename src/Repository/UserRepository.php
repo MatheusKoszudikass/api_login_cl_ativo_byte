@@ -717,7 +717,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     public function confirmPasswordReset(string $token, string $password): ResultOperation
     {
         if (empty($token) || empty($password))
-            return new ResultOperation(false, 'Token e senha não podem ser null.');
+            return new ResultOperation(false, 'Token e senha não podem ser vazias.');
 
         try {
             $user = $this->getEntityManager()->getRepository(
