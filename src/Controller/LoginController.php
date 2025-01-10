@@ -40,24 +40,14 @@ class LoginController extends AbstractController
 
         if (!empty($result->getData()) && $result->getData()[0] !== '') {
             $token = $result->getData()[0];
+            $result->clearData();
 
-            $response = new JsonResponse();
-            $response->headers->setCookie($this->createCookie($token, $login->remember));
-            $response->setData([
-                'message' => $result->getMessage(),
-                'status' => $result->isSuccess()
-            ]);
+            return $this->json($result, 200, ['Content-Type' => 'application/json', 
+            'set-cookie' => $this->createCookie($token, $login->remember)]);
 
-            return $response;
-        } else {
-            $response = new JsonResponse();
-            $response->setData([
-                'message' => $result->getMessage(),
-                'status' => $result->isSuccess()
-            ]);
-
-            return $response;
         }
+        $result->clearData();
+        return $this->json($result, 200);
     }
 
     /**
@@ -154,7 +144,7 @@ class LoginController extends AbstractController
     #[Route('/api/auth/recovery-account', methods: ['POST'], name: 'login_recovery')]
     public function recoveryAccount(#[MapRequestPayload] LoginDto $loginDto): JsonResponse
     {
-        $result = $this->_loginRepostory->recoveryAccount($loginDto->email_userName);
+        $result = $this->_loginRepostory->recoveryAccount($loginDto->emailUserName);
 
         return $this->json($result, 200);
     }
