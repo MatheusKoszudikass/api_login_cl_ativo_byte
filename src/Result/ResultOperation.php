@@ -6,6 +6,11 @@ class ResultOperation
 {
     private bool $success;
     private string $message;
+
+    /**
+     * Summary of data
+     * @var array T[]
+     */
     private array $data;
 
     public function __construct(bool $success, string $message = '', array $data = [])
@@ -28,6 +33,11 @@ class ResultOperation
     public function getData(): array
     {
         return $this->data;
+    }
+
+    public function clearData()
+    {
+        $this->data = [];
     }
 
     public static function createSuccess(string $message = '', array $data = []): self
