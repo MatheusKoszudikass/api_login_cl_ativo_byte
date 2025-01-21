@@ -74,19 +74,6 @@ class LoginController extends AbstractController
         );
     }
     
-    #[Route('/api/auth/findUser', methods: ['GET'], name: 'login_findUser')]	
-    public function findUser(Request $request): JsonResponse
-    {
-        $token = $request->cookies->get('session');
-
-        if ($token != null) {
-            $result = $this->_loginRepostory->findUserJwt($token);
-            return $this->json($result, 200);
-        }
-
-        return $this->json(false, 200);
-    }
-
     /**
      * Verifies a token JWT and returns a boolean indicating if the token is valid or not.
      * 

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Dto\Create\RoleCreateDto;
+use App\Interface\RoleRepositoryInterface;
 use App\Repository\RoleRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class RoleController extends AbstractController
 {
-    private RoleRepository $_roleRepostory;
+    private RoleRepositoryInterface $_roleRepostory;
 
     public function __construct(RoleRepository $roleRepository)
     {
@@ -80,7 +81,7 @@ class RoleController extends AbstractController
     #[Route('/api/role/findAll', methods:['GET'], name:'app_role_findAll')]
     public function findAll():JsonResponse
     {
-        return $this->json($this->_roleRepostory->findAll());
+        return $this->json($this->_roleRepostory->findRoleAll());
     }
 
     #[Route('/api/role/delete', methods: ['DELETE'], name: 'app_role_delete')]
@@ -93,7 +94,7 @@ class RoleController extends AbstractController
         return $this->json($this->_roleRepostory->deleteRole($reuslt));
     }
 
-    private function getRequestQuery(string $identifier, Request $request): string
+    private function getRequestQuery(string $identifier, Request $request): ? string
     {
         $result = $request->query->get($identifier);
 

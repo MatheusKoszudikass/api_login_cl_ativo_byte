@@ -18,7 +18,7 @@ use App\Service\MapperServiceCreate;
 use App\Service\EmailService;
 use App\Service\MapperServiceResponse;
 use App\Service\TwoFactorAuthService;
-
+use phpDocumentor\Reflection\Types\Boolean;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -96,13 +96,13 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                 return $resultVerify;
             }
 
-           $user = $this->checkIfUserForCreationExists($userDto);
+            $user = $this->checkIfUserForCreationExists($userDto);
 
-           $this->setUserTwoFactorExpiration($user);
+            $this->setUserTwoFactorExpiration($user);
 
-           $this->saveUser($user);
+            $this->saveUser($user);
 
-           $this->sendWelcomeEmail($user);
+            $this->sendWelcomeEmail($user);
 
             return new ResultOperation(
                 true,
@@ -125,7 +125,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
      * @param UserCreateDto $userDto O DTO do usuário a ser verificado.
      * @return ResultOperation A ResultOperation com o resultado da verificação.
      */
-    private function verifyIfUserHasExist(UserCreateDto $userDto): Object 
+    private function verifyIfUserHasExist(UserCreateDto $userDto): Object
     {
         $result = $this->findUserByEmailOrUsername($userDto->email);
 
@@ -138,7 +138,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         return new ResultOperation(true, 'Usuário pode ser criado');
     }
 
-/*************  ✨ Codeium Command ⭐  *************/
+    /*************  ✨ Codeium Command ⭐  *************/
     /**
      * Maps a UserCreateDto to a User entity and sets a two-factor token.
      * 
@@ -151,7 +151,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
      * @return User The user entity with the two-factor token set.
      */
 
-/******  255fd08e-2a6d-417b-b1fc-bcef9aefdeed  *******/
+    /******  255fd08e-2a6d-417b-b1fc-bcef9aefdeed  *******/
     private function checkIfUserForCreationExists(UserCreateDto $userDto): Object
     {
         $token = $this->_twoFactorAuthService->generateToken();
@@ -165,11 +165,12 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         return  $user;
     }
 
-    private function verifyAddRoleForUser(UserCreateDto $userDto, User $user): void {
+    private function verifyAddRoleForUser(UserCreateDto $userDto, User $user): void
+    {
 
         foreach ($userDto->roles as $roleExistVerify) {
 
-            if(!empty($roleExistVerify['id']) && empty($roleExistVerify['name'])) {
+            if (!empty($roleExistVerify['id']) && empty($roleExistVerify['name'])) {
                 $role = $this->getEntityManager()->getRepository(
                     Role::class
                 )->findOneBy(['id' => $roleExistVerify['id']]);
@@ -188,8 +189,8 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                 );
 
                 $user->addRole($roleCreateDto);
-            }else {
-            
+            } else {
+
                 $user->addRole($role);
             }
         }
@@ -207,7 +208,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
-    
+
     private function sendWelcomeEmail($user): void
     {
         $mensagem = $this->sendWelcomeMessage(
@@ -415,6 +416,29 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         return false;
     }
 
+    public function verifyTokenRecoveryAccount(string $token): bool
+    {
+        if (empty($token)) return false;
+
+        try 
+        {
+            return $this->verifyTokenRecoveryAccountDb($token);
+
+        } catch (Exception $e) {
+            throw new Exception("Erro ao verificar token no banco de dados.", 0, $e);
+        }
+    }
+
+    private function verifyTokenRecoveryAccountDb(string $token): bool
+    {
+        return $this->getEntityManager()
+            ->createQuery(
+                "SELECT COUNT(u.id) FROM App\Entity\User u 
+            WHERE u.resetPasswordToken = :token
+            AND u.resetPasswordTokenExpiresAt > CURRENT_TIMESTAMP()"
+            )->setParameter('token', $token)
+            ->getSingleScalarResult() > 0;
+    }
 
     /**
      * Verifica se o token de recuperação de senha expirou.
@@ -429,13 +453,16 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     {
         if (
             $user->getResetPasswordTokenExpiresAt() != null &&
-            $user->verifyResetPasswordTokenExpiresAt(new \DateTimeImmutable('now')) == false
+            $user->verifyResetPasswordTokenExpiresAt(
+                new \DateTimeImmutable('now')
+            ) == false
         ) {
 
             return true;
         }
         return false;
     }
+
 
     /**
      * Procura um usuário por email ou nome de usuário.
@@ -582,6 +609,29 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             return new ResultOperation(false, 'Erro ao deletar usuário: ' . $e->getMessage());
         }
     }
+
+
+    public function findUserJwt(string $token): ResultOperation
+    {
+        if ($token == null) return new ResultOperation(false, 'Token nao pode ser null');
+
+        try {
+
+            $decodedToken  = $this->_twoFactorAuthService->verifyToken($token);
+
+            if ($decodedToken  == null) return new ResultOperation(false, 'Token nao encontrado');
+
+            $user = $this->findUserByEmailOrUsername($decodedToken->email);
+
+            if ($user == null) return new ResultOperation(false, 'Usuário nao encontrado');
+
+            $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
+            return new ResultOperation(true, 'Usuário encontrado com sucesso', [$userDto]);
+        } catch (Exception $e) {
+            return new ResultOperation(false, 'Erro ao buscar usuario: ' . $e->getMessage());
+        }
+    }
+
 
     /**
      * Busca um usuário por ID.

@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Interface\UserRepositoryInterface;
 use App\Dto\Create\UserCreateDto;
+use App\Dto\RecoveryAccount;
 use Symfony\Component\HttpFoundation\Request;
 use App\Result\ResultOperation;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -105,6 +106,26 @@ class UserController extends AbstractController
         return $this->json($this->_userRepositoryInterface->deleteUserById($token));
     }
 
+
+    /**
+     * Finds a user by their JWT token from the cookie.
+     *
+     * @param Request $request The HTTP request containing the JWT token in the 'session' cookie.
+     * @return JsonResponse A JSON response with the result of the operation.
+     */
+    #[Route('/api/user/findUserSession', methods: ['GET'], name: 'login_findUserSession')]	
+    public function findUser(Request $request): JsonResponse
+    {
+        $token = $request->cookies->get('session');
+
+        if ($token != null) 
+        {
+            $result = $this->_userRepositoryInterface->findUserJwt($token);
+            return $this->json($result, 200);
+        }
+
+        return $this->json(new ResultOperation(false, 'Usuário nao encontrado'), 200);
+    }
     /**
      * Find a user by ID.
      *
@@ -171,6 +192,24 @@ class UserController extends AbstractController
     }
 
     /**
+     * Verifies a user password recovery token.
+     *
+     * Checks if the provided token is valid and not expired.
+     *
+     * @param Request $request The HTTP request containing the token parameter.
+     * @return JsonResponse A JSON response with the result of the operation. True if the token is valid, false otherwise.
+     */
+    #[Route("/api/user/verifyTokenRecoveryAccount", methods: ['GET'], name: 'api_user_verifyTokenRecoveryAccount')]
+    public function verifyTokenRecoveryAccount(Request $request): JsonResponse
+    {
+        $token = $request->query->get('token');
+
+        if(empty($token)) return $this->json(false, 200);
+
+        return $this->json($this->_userRepositoryInterface->verifyTokenRecoveryAccount($token));
+    }
+
+    /**
      * Confirms the password reset for a user with the given token and new password.
      *
      * Retrieves a user based on the provided token and password parameters from the request query,
@@ -181,11 +220,13 @@ class UserController extends AbstractController
      * @return JsonResponse A JSON response with the result of the operation.
      */
     #[Route('/api/user/confirmPasswordReset', methods: ['POST'], name: 'api_user_confirmPasswordReset')]
-    public function confirmPasswordReset(Request $request): JsonResponse
+    public function confirmPasswordReset(#[MapRequestPayload] RecoveryAccount $recovery): JsonResponse
     {
-        $token = $request->query->get('token');
-        $password = $request->query->get('password');
-
-        return $this->json($this->_userRepositoryInterface->confirmPasswordReset($token, $password));
+        if($recovery == null) return $this->json(new ResultOperation(
+            false, 'Token nao pode ser null'));
+            
+        return $this->json(
+            $this->_userRepositoryInterface->confirmPasswordReset(
+                $recovery->token, $recovery->password));
     }
 }
