@@ -3,21 +3,22 @@ deployment:
   tasks:
     # Definir o caminho do deploy
     - export DEPLOYPATH=/home/ativobyt/api.cliente.ativobyte.com.br/
+    - export REPOSITORY=/home/ativobyt/repository/api.cliente.ativobyte.com.br/
 
     # Copiar arquivos de configuração
-    - /bin/cp .env $DEPLOYPATH
-    - /bin/cp .htaccess $DEPLOYPATH
-    - /bin/cp composer.json $DEPLOYPATH
-    - /bin/cp composer.lock $DEPLOYPATH
-    - /bin/cp symfony.lock $DEPLOYPATH
+    - /bin/cp $REPOSITORY/.env $DEPLOYPATH
+    - /bin/cp $REPOSITORY/.htaccess $DEPLOYPATH
+    - /bin/cp $REPOSITORY/composer.json $DEPLOYPATH
+    - /bin/cp $REPOSITORY/composer.lock $DEPLOYPATH
+    - /bin/cp $REPOSITORY/symfony.lock $DEPLOYPATH
 
     # Copiar diretórios
-    - /bin/cp -R bin $DEPLOYPATH
-    - /bin/cp -R migrations $DEPLOYPATH
-    - /bin/cp -R config $DEPLOYPATH
-    - /bin/cp -R public $DEPLOYPATH
-    - /bin/cp -R src $DEPLOYPATH
-    - /bin/cp -R var $DEPLOYPATH
+    - /bin/cp -R $REPOSITORY/bin/* $DEPLOYPATH
+    - /bin/cp -R $REPOSITORY/migrations/* $DEPLOYPATH
+    - /bin/cp -R $REPOSITORY/config/* $DEPLOYPATH
+    - /bin/cp -R $REPOSITORY/public/* $DEPLOYPATH
+    - /bin/cp -R $REPOSITORY/src/* $DEPLOYPATH
+    - /bin/cp -R $REPOSITORY/var/* $DEPLOYPATH
 
     # Atualizar dependências do Composer
     - cd $DEPLOYPATH && composer install --no-dev --optimize-autoloader
