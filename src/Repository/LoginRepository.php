@@ -91,30 +91,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
             return new ResultOperation(false, 'Erro login: ' . $e->getMessage());
         }
     }
-
-
-    public function findUserJwt(string $token): ResultOperation
-    {
-        if($token == null) return new ResultOperation(false, 'Token nao pode ser null');
-
-        try{
-
-            $decodedToken  = $this->_twoFactorAuthService->verifyToken($token);
-
-            if($decodedToken  == null ) return new ResultOperation(false, 'Token nao encontrado');
-
-            $user = $this->_userRepository->findUserByEmailOrUsername($decodedToken->email);
-
-            if($user == null) return new ResultOperation(false, 'Usuário nao encontrado');
-            
-            $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
-            return new ResultOperation(true, 'Usuário encontrado com sucesso', [$userDto]);
-
-        }catch(Exception $e){
-            return new ResultOperation(false, 'Erro ao buscar usuario: ' . $e->getMessage());
-        }
-    }
-
+    
     /**
      * Busca um objeto Login por email_userName.
      * 
@@ -126,7 +103,6 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         return $this->getEntityManager()->getRepository(Login::class)
         ->findOneBy(['email_userName' => $email_userName]);
     }
-
 
     /**
      * Verifica se o  ultimo acesso do usuário foi mais de 1 minuto atrás.
@@ -153,7 +129,6 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         return false;
     }
 
-
     /**
      * Valida um token JWT e verifica se o usuário está autenticado.
      * 
@@ -176,7 +151,6 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         }
     }
 
-
     /**
      * Verifica a última acesso ao sistema para um usuário baseado em seu email.
      * 
@@ -190,7 +164,6 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
         $login->setSystemAccess();
         $this->persistLogin($login);
     }
-
    
     /**
      * Initiates the account recovery process for a user based on their email.

@@ -117,6 +117,18 @@ class UserRepositoryTest extends KernelTestCase
         $this->assertNotNull($result);
         $this->assertFalse($result);
 
+        $this->testVerifyTokenRecoveryAccount();
+    }
+
+    private function testVerifyTokenRecoveryAccount(): void
+    {
+        $user = UserDependencies::findUserByEmail(UserDataTest::createUser()->email);
+
+        $result = $this->_userRepository->verifyTokenRecoveryAccount('');
+
+        $this->assertNotNull($result);
+        $this->assertFalse($result);
+
         $this->testVerifyTokenExpiredRecoveryAccount();
     }
 
@@ -281,7 +293,7 @@ class UserRepositoryTest extends KernelTestCase
         $result = $this->_userRepository->confirmPasswordReset('', ''); 
         $this->assertNotNull($result);
         $this->assertFalse($result->isSuccess());
-        $this->assertSame('Token e senha não podem ser null.', $result->getMessage());
+        $this->assertSame('Token e senha não podem ser vazias.', $result->getMessage());
 
         // $result = $this->_userRepository->confirmPasswordReset($data->passwordResetToken, $data->password);  
         // $this->assertNotNull($result);

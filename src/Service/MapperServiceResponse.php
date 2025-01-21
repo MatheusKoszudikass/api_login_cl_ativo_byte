@@ -36,4 +36,16 @@ class MapperServiceResponse
     {
         return $user->mapUserDto();
     }
+
+    public function mapUser(UserResponseDto $userDto): User
+    {
+        return new User(
+            $userDto->email,
+            '123456789',
+            $userDto->firstName,
+            $userDto->lastName,
+            $userDto->userName,
+            $userDto->cnpjCpfRg
+        );
+    }
 }
