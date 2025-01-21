@@ -1,0 +1,44 @@
+<?php
+
+namespace ContainerI4MWXov;
+
+include_once \dirname(__DIR__, 4).''.\DIRECTORY_SEPARATOR.'vendor'.\DIRECTORY_SEPARATOR.'doctrine'.\DIRECTORY_SEPARATOR.'persistence'.\DIRECTORY_SEPARATOR.'src'.\DIRECTORY_SEPARATOR.'Persistence'.\DIRECTORY_SEPARATOR.'ObjectManager.php';
+include_once \dirname(__DIR__, 4).''.\DIRECTORY_SEPARATOR.'vendor'.\DIRECTORY_SEPARATOR.'doctrine'.\DIRECTORY_SEPARATOR.'orm'.\DIRECTORY_SEPARATOR.'src'.\DIRECTORY_SEPARATOR.'EntityManagerInterface.php';
+include_once \dirname(__DIR__, 4).''.\DIRECTORY_SEPARATOR.'vendor'.\DIRECTORY_SEPARATOR.'doctrine'.\DIRECTORY_SEPARATOR.'orm'.\DIRECTORY_SEPARATOR.'src'.\DIRECTORY_SEPARATOR.'EntityManager.php';
+class EntityManagerGhostC135a4f extends \Doctrine\ORM\EntityManager implements \Symfony\Component\VarExporter\LazyObjectInterface
+{
+    use \Symfony\Component\VarExporter\LazyGhostTrait;
+
+    private const LAZY_OBJECT_PROPERTY_SCOPES = [
+        "\0".parent::class."\0".'cache' => [parent::class, 'cache', null],
+        "\0".parent::class."\0".'closed' => [parent::class, 'closed', null],
+        "\0".parent::class."\0".'config' => [parent::class, 'config', null],
+        "\0".parent::class."\0".'conn' => [parent::class, 'conn', null],
+        "\0".parent::class."\0".'eventManager' => [parent::class, 'eventManager', null],
+        "\0".parent::class."\0".'expressionBuilder' => [parent::class, 'expressionBuilder', null],
+        "\0".parent::class."\0".'filterCollection' => [parent::class, 'filterCollection', null],
+        "\0".parent::class."\0".'metadataFactory' => [parent::class, 'metadataFactory', null],
+        "\0".parent::class."\0".'proxyFactory' => [parent::class, 'proxyFactory', null],
+        "\0".parent::class."\0".'repositoryFactory' => [parent::class, 'repositoryFactory', null],
+        "\0".parent::class."\0".'unitOfWork' => [parent::class, 'unitOfWork', null],
+        'cache' => [parent::class, 'cache', null],
+        'closed' => [parent::class, 'closed', null],
+        'config' => [parent::class, 'config', null],
+        'conn' => [parent::class, 'conn', null],
+        'eventManager' => [parent::class, 'eventManager', null],
+        'expressionBuilder' => [parent::class, 'expressionBuilder', null],
+        'filterCollection' => [parent::class, 'filterCollection', null],
+        'metadataFactory' => [parent::class, 'metadataFactory', null],
+        'proxyFactory' => [parent::class, 'proxyFactory', null],
+        'repositoryFactory' => [parent::class, 'repositoryFactory', null],
+        'unitOfWork' => [parent::class, 'unitOfWork', null],
+    ];
+}
+
+class_exists(\Symfony\Component\VarExporter\Internal\Hydrator::class);
+class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectRegistry::class);
+class_exists(\Symfony\Component\VarExporter\Internal\LazyObjectState::class);
+
+if (!\class_exists('EntityManagerGhostC135a4f', false)) {
+    \class_alias(__NAMESPACE__.'\\EntityManagerGhostC135a4f', 'EntityManagerGhostC135a4f', false);
+}
