@@ -306,6 +306,13 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     ";
     }
 
+    /**
+     * Envia uma mensagem de recuperação de senha para o usuário com um link para redefinir sua senha.
+     *
+     * @param string $firstName Nome do usuário
+     * @param string $token Token de autenticação de dois fatores
+     * @return string Mensagem de recuperação de senha em formato HTML
+     */
     public function sendPasswordRecoveryMessage(string $firstName, string $token): string
     {
         $baseUrl = $_ENV['CORS_ALLOW_ORIGINS'];
@@ -320,6 +327,26 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
     ";
     }
 
+    /**
+     * Valida o usuário e verifica se a conta está ativa.
+     *
+     * Busca um usuário com base no email e senha fornecidos no DTO.
+     * Caso o usuário não exista ou a senha esteja incorreta, retorna
+     * uma operação de resultado com um erro.
+     * Caso o usuário exista e a senha esteja correta, verifica se a
+     * conta está ativa. Se a conta não estiver ativa, gera um novo
+     * token de autenticação de dois fatores, atualiza o token no
+     * usuário e mapeia para um DTO, enviando um email com o token
+     * atualizado.
+     * Se a conta estiver ativa, retorna uma operação de resultado
+     * com sucesso.
+     * Em caso de erro, lança uma exceção personalizada com uma
+     * mensagem de erro.
+     *
+     * @param UserCreateDto $userDto DTO com os dados do usuário
+     * @return ResultOperation Operação de resultado com o resultado da
+     * validação
+     */
     public function validateUser(UserCreateDto $userDto): ResultOperation
     {
         try {
@@ -351,6 +378,17 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         }
     }
 
+    /**
+     * Verifica se o usuário existe com base no email ou no username.
+     * 
+     * Busca um usuário com o email e o username fornecidos no parâmetro $identifier.
+     * Caso um dos dois exista, retorna uma ResultOperation com um erro.
+     * Caso contrário, retorna uma ResultOperation com um sucesso.
+     * 
+     * @param string $identifier email ou nome de usuário do usuário a ser verificado.
+     * @return ResultOperation A ResultOperation com o resultado da verificação.
+     * @throws Exception Caso ocorra um erro ao buscar o usuário.
+     */
     public function userExists(string $identifier): ResultOperation
     {
         if ($identifier == null || $identifier === '') return new ResultOperation(false, 'Identificador null.');
@@ -395,7 +433,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                 );
 
                 $user->setTwoFactorToken($tokenActiveCount);
-                $user->setTowoFactorExpiresAt(
+                $user->setTwoFactorExpiresAt(
                     new \DateTimeImmutable('+1 days')
                 );
 
@@ -403,7 +441,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
                 $this->getEntityManager()->flush();
 
                 $this->_mailer->sendEmail(
-                    $user->isEmail($user->isEmail($email)),
+                    $user->getEmail(),
                     'AtivoByte - Cadastrado',
                     $menssage,
                 );
@@ -416,6 +454,20 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
         return false;
     }
 
+    /**
+     * Verifica se o token de recuperação de senha existe no banco de dados e
+     * não expirou.
+     *
+     * Verifica se o token de recuperação de senha existe no banco de dados,
+     * filtrando por token e verificando se a data de expiração é maior que a
+     * data atual.
+     *
+     * Se o token for vazio, retorna false.
+     *
+     * @param string $token O token de recuperação de senha a ser verificado.
+     * @return bool True se o token existe e não expirou, false caso contrário.
+     * @throws Exception Se ocorrer um erro ao verificar o token no banco de dados.
+     */
     public function verifyTokenRecoveryAccount(string $token): bool
     {
         if (empty($token)) return false;
@@ -428,7 +480,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
             throw new Exception("Erro ao verificar token no banco de dados.", 0, $e);
         }
     }
-
+    
     private function verifyTokenRecoveryAccountDb(string $token): bool
     {
         return $this->getEntityManager()
@@ -515,7 +567,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
         try {
             $user->setTwoFactorToken($token);
-            $user->setTowoFactorExpiresAt((new \DateTimeImmutable())
+            $user->setTwoFactorExpiresAt((new \DateTimeImmutable())
                 ->modify('+1 days'));
             $this->getEntityManager()->persist($user);
             $this->getEntityManager()->flush();
@@ -613,7 +665,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
     public function findUserJwt(string $token): ResultOperation
     {
-        if ($token == null) return new ResultOperation(false, 'Token nao pode ser null');
+        if (empty($token)) return new ResultOperation(false, 'Token nao pode ser null');
 
         try {
 
@@ -627,6 +679,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
             $userDto = $this->_mapperServiceResponse->mapUserToDto($user);
             return new ResultOperation(true, 'Usuário encontrado com sucesso', [$userDto]);
+
         } catch (Exception $e) {
             return new ResultOperation(false, 'Erro ao buscar usuario: ' . $e->getMessage());
         }
