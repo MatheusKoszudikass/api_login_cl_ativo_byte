@@ -208,7 +208,7 @@ class LoginRepository extends ServiceEntityRepository implements LoginRepository
                 $user->getfullName(), $token);
 
             $this->_mailer->sendEmail(
-                $user->isEmail($email_username),
+                $user->getEmail(),
                 'Recuperar senha',
                 $menssage,
             );
