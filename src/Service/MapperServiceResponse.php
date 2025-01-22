@@ -34,7 +34,16 @@ class MapperServiceResponse
     
     public function mapUserToDto(User $user): UserResponseDto
     {
-        return $user->mapUserDto();
+        $dto = new UserResponseDto();
+        $dto->id = $user->getId();
+        $dto->email = $user->getEmail();
+        $dto->firstName = $user->getFirstName();
+        $dto->lastName = $user->getLastName();
+        $dto->userName = $user->getUserName();
+        $dto->cnpjCpfRg = $user->getCnpjCpfRg();
+        $dto->legalRegister = $user->getLegalRegister();
+        $dto->roles = $user->getRoles();
+        return $dto;
     }
 
     public function mapUser(UserResponseDto $userDto): User

@@ -38,8 +38,6 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     #[ORM\Column(length: 50)]
     private ?string $userName = null;
 
-    // #[ORM\ManyToMany(targetEntity: "Role", inversedBy: "users", cascade: ["persist"])]
-    // #[ORM\JoinTable(name: "user_roles")]
     #[ORM\JoinTable(name: "user_roles")]
     #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
     #[ORM\InverseJoinColumn(name: "role_id", referencedColumnName: "id")]
@@ -79,32 +77,8 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $this->roles = new ArrayCollection();
     }
 
-    public function mapUserDto(): UserResponseDto
+    public function getEmail(): string 
     {
-        $userDto = new UserResponseDto();
-        $userDto->id = $this->id;
-        $userDto->email = $this->email;
-        $userDto->firstName = $this->firstName;
-        $userDto->lastName = $this->lastName;
-        $userDto->userName = $this->userName;
-        $userDto->cnpjCpfRg = $this->cnpjCpfRg;
-        $userDto->legalRegister = $this->isLegalEntity;
-        return $userDto;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    public function isEmail(string $email): string
-    {
-        $this->validateEmail($email);
-        return $this->email;
-    }
-
-    public function getEmail(): string {
-
         return $this->validateEmail($this->email);
     }
     
@@ -115,57 +89,10 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this;
     }
 
-    public function getPassword(): string
+    public function updateEmail(string $newEmail): void
     {
-        return $this->password;
-    }
-
-    public function isFirstName(string $firstName): string
-    {
-        return $this->firstName === $firstName;
-    }
-
-    public function setFirstName(string $firstName): static
-    {
-        $this->firstName = $firstName;
-        
-        return $this;
-    }
-
-    public function isLastName(string $lastName): string
-    {
-        return $this->lastName === $lastName;
-    }
-
-    public function setLastName(string $lastName): static
-    {
-        $this->lastName = $lastName;
-
-        return $this;
-    }
-
-    public function isUserName(string $userName): string
-    {
-        return $this->userName === $userName;
-    }
-
-    public function setUserName(string $userName): static
-    {
-        $this->userName = $userName;
-
-        return $this;
-    }
-
-    public function isCnpjCpf(string $cnpjCpf): string
-    {
-        return $this->cnpjCpfRg === $cnpjCpf;
-    }
-
-    public function setCnpjCpf(string $cnpjCpf): static
-    {
-        $this->cnpjCpfRg = $cnpjCpf;
-
-        return $this;
+        $this->email = $this->validateEmail($newEmail);
+        $this->dateUpdated = new \DateTime();
     }
 
     private function validateEmail(string $email): string
@@ -176,27 +103,14 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $email;
     }
 
-    private function hashPassword(string $password): string
+    public function getPassword(): string
     {
-        if (strlen($password) < 8) {
-            throw new \InvalidArgumentException("A senha deve ter pelo menos 8 caracteres.");
-        }
-
-        return password_hash($password, PASSWORD_BCRYPT);
+        return $this->password;
     }
 
-    private function validateCnpjCpf(string $cnpjCpf): string
+    public function updatePassword(string $currentPassword, string $newPassword): void
     {
-        if ($cnpjCpf == null) {
-            throw new \InvalidArgumentException("O campo 'CNPJ/CPF' não pode estar vazio.");
-        } else if ($cnpjCpf >= 11) {
-        }
-        return $cnpjCpf;
-    }
-
-    public function updatePassword(string $currentPassowrd, string $newPassword): void
-    {
-        if (!password_verify($currentPassowrd, $this->password)) {
+        if (!password_verify($currentPassword, $this->password)) {
             throw new \InvalidArgumentException("Senha atual incorreta.");
         }
 
@@ -210,15 +124,72 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         $this->dateCreated = new \DateTime();
     }
 
-    public function updateEmail(string $newEmail): void
+    private function hashPassword(string $password): string
     {
-        $this->email = $this->validateEmail($newEmail);
-        $this->dateUpdated = new \DateTime();
+        if (strlen($password) < 8) {
+            throw new \InvalidArgumentException("A senha deve ter pelo menos 8 caracteres.");
+        }
+
+        return password_hash($password, PASSWORD_BCRYPT);
     }
 
-    public function isLegalentity(): bool
+    public function getFirstName(): string
     {
-        return $this->isLegalentity ?? false;
+        return $this->firstName;
+    }
+
+    public function setFirstname(string $firstName): static
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastname(string $lastName): static
+    {
+        $this->lastName = $lastName;
+        return $this;
+    }
+
+    public function getUserName(): string
+    {
+        return $this->userName;
+    }
+
+    public function setUserName(string $userName): static
+    {
+        $this->userName = $userName;
+
+        return $this;
+    }
+
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
+    }
+
+    public function getCnpjCpfRg(): string
+    {
+        return $this->cnpjCpfRg;
+    }
+
+    public function setCnpjCpf(string $cnpjCpf): static
+    {
+        $this->cnpjCpfRg = $cnpjCpf;
+
+        return $this;
+    }
+
+    private function validateCnpjCpf(string $cnpjCpf): string
+    {
+        if (empty($cnpjCpf)) {
+            throw new \InvalidArgumentException("O campo 'CNPJ/CPF' não pode estar vazio.");
+        }
+        return $cnpjCpf;
     }
 
     public function addRole(Role $role): static
@@ -228,43 +199,16 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         }
 
         return $this;
-    }    
+    }
+
     public function getRoles(): array
     {
         return $this->roles->toArray();
     }
 
     public function setRolesName(): array
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * Retrieves the roles associated with the user.
- *
- * @return array An array of Role objects associated with the user.
- */
-
-/******  165c7d3d-fbda-4ad8-ac16-6028d5df3945  *******/    {
-
+    {
         return $this->roles->map(fn(Role $role) => $role->getName())->toArray();
-    }
-
-    public function authenticate(string $inputPassword): bool
-    {   
-        return password_verify($inputPassword, $this->password);
-    }
-
-    public function getUserIdentifier(): string
-    {
-        return $this->email;
-    }
-
-    public function getfullName(): string
-    {
-        return $this->firstName . ' ' . $this->lastName;
-    }
-
-    public function eraseCredentials(): void
-    {
-        // Apaga dados sensíveis temporários
     }
 
     public function getTwoFactorToken(): ?string
@@ -284,7 +228,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->twoFactorExpiresAt;
     }
 
-    public function setTowoFactorExpiresAt(\DateTimeImmutable $twoFactorExpiresAt): static
+    public function setTwoFactorExpiresAt(\DateTimeImmutable $twoFactorExpiresAt): static
     {
         $this->twoFactorExpiresAt = $twoFactorExpiresAt;
 
@@ -293,11 +237,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
 
     public function verifyTwoFactorExpiresAt(\DateTimeImmutable $dateTime): bool
     {
-        if($dateTime >= $this->twoFactorExpiresAt) 
-        {
-           return true;
-        }
-        return false;
+        return $dateTime >= $this->twoFactorExpiresAt;
     }
 
     public function isTwoFactorEnabled(): bool
@@ -312,6 +252,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this;
     }
 
+    /* Métodos relacionados a reset de senha */
     public function getResetPasswordToken(): ?string
     {
         return $this->resetPasswordToken;
@@ -326,12 +267,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
 
     public function verifyResetPasswordToken(string $twoFactorToken): bool
     {
-        if($this->resetPasswordToken == $twoFactorToken)
-        {
-            return true;
-        }
-
-        return false;
+        return $this->resetPasswordToken === $twoFactorToken;
     }
 
     public function getResetPasswordTokenExpiresAt(): ?\DateTimeImmutable
@@ -348,10 +284,31 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
 
     public function verifyResetPasswordTokenExpiresAt(\DateTimeImmutable $dateTime): bool
     {
-        if($dateTime >= $this->resetPasswordTokenExpiresAt)
-        {
-           return true;
-        }
-        return false;
+        return $dateTime >= $this->resetPasswordTokenExpiresAt;
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function authenticate(string $inputPassword): bool
+    {   
+        return password_verify($inputPassword, $this->password);
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function getLegalRegister(): bool
+    {
+        return $this->isLegalEntity ?? false;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Apaga dados sensíveis temporários
     }
 }
