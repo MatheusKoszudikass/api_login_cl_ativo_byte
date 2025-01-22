@@ -2,6 +2,12 @@
 
 echo "Iniciando deploy"
 
+echo "Trocando para a branch 'master'..."
+git checkout master
+
+echo "Puxandos as mudanças do repositório remoto master..."
+git pull origin master
+
 echo "Testando integração"
 php vendor/bin/phpunit
 
@@ -55,5 +61,11 @@ fi
 
 echo "Limpando arquivos temporários..."
 rm -rf "$BACKUP_PATH"
+
+echo "Excluindo branch 'release'..."
+git branch -D release
+
+echo "Criando branch 'release'..."
+git checkout -b release
 
 echo "Processo de deploy concluído com sucesso."
