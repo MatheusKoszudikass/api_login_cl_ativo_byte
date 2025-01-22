@@ -138,9 +138,21 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->firstName;
     }
 
+    public function setFirstname(string $firstName): static
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
     public function getLastName(): string
     {
         return $this->lastName;
+    }
+
+    public function setLastname(string $lastName): static
+    {
+        $this->lastName = $lastName;
+        return $this;
     }
 
     public function getUserName(): string

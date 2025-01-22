@@ -198,7 +198,7 @@ class UserRepository extends ServiceEntityRepository implements UserRepositoryIn
 
     private function setUserTwoFactorExpiration($user): void
     {
-        $user->setTowoFactorExpiresAt(
+        $user->setTwoFactorExpiresAt(
             (new \DateTimeImmutable('now'))->modify('+1 days')
         );
     }
