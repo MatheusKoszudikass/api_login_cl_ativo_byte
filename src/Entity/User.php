@@ -311,18 +311,4 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
     {
         // Apaga dados sensíveis temporários
     }
-
-    public function mapUserDto(): UserResponseDto
-    {
-        $userDto = new UserResponseDto();
-        $userDto->id = $this->id;
-        $userDto->email = $this->email;
-        $userDto->firstName = $this->firstName;
-        $userDto->lastName = $this->lastName;
-        $userDto->userName = $this->userName;
-        $userDto->cnpjCpfRg = $this->cnpjCpfRg;
-        $userDto->legalRegister = $this->isLegalEntity;
-        $userDto->roles = $this->getRoles();
-        return $userDto;
-    }
 }
