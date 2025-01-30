@@ -2,10 +2,10 @@
 
 namespace App\Dto\Response;
 
-use Doctrine\DBAL\Types\Types;
+use App\Dto\BaseEntityDto;
 
 
-class RoleResponseDto
+class RoleResponseDto extends BaseEntityDto
 {
     public string $id;
     public string $name;
