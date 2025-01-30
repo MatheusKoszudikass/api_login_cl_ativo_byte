@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Dto\Response\UserResponseDto;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,25 +17,29 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class User extends BaseEntity implements PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Column(length: 180)]
-    private ?string $email = null;
+    private string $email;
+
+    #[ORM\OneToOne(targetEntity: Image::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn("image_id", referencedColumnName: "id", nullable: true)]
+    private ?Image $avatar = null;
 
     #[ORM\Column(length: 60)]
-    private ?string $password = null;
+    private string $password;
 
     #[ORM\Column(length: 50)]
-    private ?string $firstName = null;
+    private string $firstName;
 
     #[ORM\Column(length: 50)]
-    private ?string $lastName = null;
+    private string $lastName;
 
     #[ORM\Column(length: 14)]
-    private ?string $cnpjCpfRg = null;
+    private string $cnpjCpfRg;
 
     #[ORM\Column(nullable: false)]
-    private ?bool $isLegalEntity  = false;
+    private bool $isLegalEntity = false;
 
     #[ORM\Column(length: 50)]
-    private ?string $userName = null;
+    private string $userName;
 
     #[ORM\JoinTable(name: "user_roles")]
     #[ORM\JoinColumn(name: "user_id", referencedColumnName: "id")]
@@ -82,14 +85,7 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $this->validateEmail($this->email);
     }
     
-    public function setEmail(string $email): static 
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    public function updateEmail(string $newEmail): void
+    public function setEmail(string $newEmail): void
     {
         $this->email = $this->validateEmail($newEmail);
         $this->dateUpdated = new \DateTime();
@@ -103,6 +99,16 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $email;
     }
 
+    public function getImage(): ?Image
+    {
+        return $this->avatar;
+    }
+
+    public function setImage(?Image $avatar): self
+    {
+        $this->avatar = $avatar;
+        return $this;
+    }
     public function getPassword(): string
     {
         return $this->password;
