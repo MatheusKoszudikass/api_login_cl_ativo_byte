@@ -37,23 +37,12 @@ class Image extends BaseEntity
         string $ownerId
     ) {
         parent::__construct();
-        $this->name = $name;
-        $this->path = $path;
-        $this->typeImage = $typeImage->value;
+        $this->name = $this->validateNotEmpty($name, "O nome da imagem não pode ser vazio.");
+        $this->path = $this->validateNotEmpty($path, "O campo 'path' não pode ser vazio.");
+        $this->typeImage = $this->validateNotEmpty($typeImage->value, "O campo 'typeImage' não pode ser vazio.");
+        $this->ownerClass = $this->validateNotEmpty($ownerClass, "O campo 'ownerClass' não pode ser vazio.");
+        $this->ownerId = $this->validateNotEmpty($ownerId, "O campo 'ownerId' não pode ser vazio.");
         $this->typeImageExtension = $this->extractExtension($path);
-        $this->ownerClass = $ownerClass;
-        $this->ownerId = $ownerId;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    public function setId(string $id): static
-    {
-        $this->id = $id;
-        return $this;
     }
 
     public function getName(): string
@@ -63,7 +52,7 @@ class Image extends BaseEntity
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = $this->validateNotEmpty($name, "O nome da imagem não pode ser vazio.");
         return $this;
     }
 
@@ -74,7 +63,7 @@ class Image extends BaseEntity
 
     public function setPath(string $path): static
     {
-        $this->path = $path;
+        $this->path = $this->validateNotEmpty($path, "O campo 'path' não pode ser vazio.");
         $this->typeImageExtension = $this->extractExtension($path);
         return $this;
     }
@@ -87,6 +76,7 @@ class Image extends BaseEntity
     public function setTypeImage(TypeImageEnum $typeImage): static
     {
         $this->typeImage = $typeImage->value;
+
         return $this;
     }
 
@@ -97,19 +87,10 @@ class Image extends BaseEntity
 
     public function setTypeImageExtension(TypeImageExtensionEnum $typeImageExtension): static
     {
-        $this->typeImageExtension = $typeImageExtension->value;
-        return $this;
-    }
+        $this->typeImageExtension = $this->validateNotEmpty(
+            $typeImageExtension->value, "O campo 'typeImageExtension' não pode ser vazio ou valor inválido.");
 
-    private function extractExtension(string $path): string
-    {
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    
-        if (empty($extension) || !TypeImageExtensionEnum::tryFrom($extension)) {
-            throw new InvalidArgumentException("A extensão '$extension' não é válida.");
-        }
-    
-        return $extension;
+        return $this;
     }
 
     public function getOwnerClass(): string
@@ -119,7 +100,9 @@ class Image extends BaseEntity
 
     public function setOwnerClass(string $ownerClass): static
     {
-        $this->ownerClass = $ownerClass;
+        $this->ownerClass = $this->validateNotEmpty(
+            $ownerClass, "O campo 'ownerClass' não pode ser vazio.");
+
         return $this;
     }
 
@@ -130,7 +113,26 @@ class Image extends BaseEntity
 
     public function setOwnerId(string $ownerId): static
     {
-        $this->ownerId = $ownerId;
+        $this->ownerId = $this->validateNotEmpty(
+            $ownerId, "O campo 'ownerId' não pode ser vazio.");
+
         return $this;
+    }
+
+    private function extractExtension(string $path): string
+    {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        return TypeImageExtensionEnum::tryFrom($extension)
+            ? $extension
+            : throw new InvalidArgumentException("A extensão '$extension' não é válida.");
+    }
+
+    private function validateNotEmpty(string $value, string $errorMessage): string
+    {
+        if (empty($value)) {
+            throw new InvalidArgumentException($errorMessage);
+        }
+        return $value;
     }
 }
