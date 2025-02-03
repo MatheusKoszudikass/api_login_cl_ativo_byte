@@ -31,11 +31,6 @@ class Login extends BaseEntity
         $this->lastLoginAttempt = new \DateTime();
     }
 
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
     public function validateUserName(string $userName): ?string 
     {
         if($userName == null)

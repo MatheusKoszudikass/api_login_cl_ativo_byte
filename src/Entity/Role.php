@@ -31,12 +31,7 @@ class Role extends BaseEntity
         $this->description = $description;
         $this->users = new ArrayCollection();
     }
-
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
-
+    
     public function getName(): ?string
     {
         return $this->name;

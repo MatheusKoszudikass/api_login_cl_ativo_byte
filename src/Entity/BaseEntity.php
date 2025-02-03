@@ -52,6 +52,11 @@ abstract class BaseEntity
         );
     }
 
+    public function getId(): string 
+    {
+        return $this->id;
+    }
+
     /**
      * Sets the system access date to the current date and time
      */

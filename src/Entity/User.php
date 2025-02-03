@@ -293,11 +293,6 @@ class User extends BaseEntity implements PasswordAuthenticatedUserInterface, Use
         return $dateTime >= $this->resetPasswordTokenExpiresAt;
     }
 
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     public function authenticate(string $inputPassword): bool
     {   
         return password_verify($inputPassword, $this->password);
