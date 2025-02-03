@@ -4,10 +4,13 @@ namespace App\Service;
 
 use App\Dto\Response\RoleResponseDto;
 use App\Dto\Response\UserResponseDto;
+use App\Dto\Response\ImageResponseDto;
 use App\Result\ResultOperation;
 use App\Entity\Role;
 use App\Entity\User;
-use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use App\Entity\Image;
+
+use App\Entity\Enum\TypeImageEnum;
 
 class MapperServiceResponse
 {
@@ -55,6 +58,29 @@ class MapperServiceResponse
             $userDto->lastName,
             $userDto->userName,
             $userDto->cnpjCpfRg
+        );
+    }
+
+    public function mapImageDto(Image $image): ImageResponseDto
+    {
+        $dto = new ImageResponseDto();
+        $dto->id = $image->getId();
+        $dto->name = $image->getName();
+        $dto->path = $image->getPath();
+        $dto->typeImage = $image->getTypeImage()->value;
+        $dto->ownerClass = $image->getOwnerClass();
+        $dto->ownerId = $image->getOwnerId();
+        return $dto;
+    }
+
+    public function mapImage(ImageResponseDto $imageDto): Image
+    {
+        return new Image(
+            $imageDto->name,
+            $imageDto->path,
+            TypeImageEnum::from($imageDto->typeImage),
+            $imageDto->ownerClass,
+            $imageDto->ownerId,
         );
     }
 }

@@ -2,11 +2,12 @@
 
 namespace App\Service;
 
+use App\Dto\Create\ImageCreateDto;
 use App\Entity\User;
 use App\Entity\Role;
+use App\Entity\Image;
 use App\Dto\Create\UserCreateDto;
 use App\Dto\Create\RoleCreateDto;
-use App\Dto\UserResponseDto;
 
 class MapperServiceCreate
 {
@@ -29,13 +30,13 @@ class MapperServiceCreate
     public function mapUserToDto(User $user): UserCreateDto
     {
         $dto = new UserCreateDto();
-        $dto->email = $user->isEmail($dto->email);
+        $dto->email = $user->getEmail();
         $dto->password = $user->getPassword();
-        $dto->firstName = $user->isFirstName($dto->firstName);
-        $dto->lastName = $user->isLastName($dto->lastName);
-        $dto->userName = $user->isUserName($dto->userName);
-        $dto->cnpjCpfRg = $user->isCnpjCpf($dto->cnpjCpfRg);
-        // $dto->roles = $user->getRoleNames();
+        $dto->firstName = $user->getFirstName();
+        $dto->lastName = $user->getLastName();
+        $dto->userName = $user->getUserName();
+        $dto->cnpjCpfRg = $user->getCnpjCpfRg();
+        $dto->roles = $user->getRoles();
         return $dto;
     }
 
@@ -49,16 +50,32 @@ class MapperServiceCreate
             $dto->userName,
             $dto->cnpjCpfRg,
         );
-        // $expiresAt = (new \DateTimeImmutable())->modify('+1 days');
-        // $expiresAt = new \DateTimeImmutable('+1 minutes');
+        
         $user->getTwoFactorExpiresAt();
 
-        // foreach ($dto->roles as $roleData) {
-        //     if (isset($roleData['id']) && isset($roleData['name'])) {
-        //         $role = new Role($roleData['name'], $roleData['description']);
-        //         $role->addUser($user);
-        //     }
-        // }
         return $user;
+    }
+
+    public function mapImageToDto(Image $image): ImageCreateDto
+    {
+        $dto = new ImageCreateDto();
+        $dto->name = $image->getName();
+        $dto->path = $image->getPath();
+        $dto->typeImage = $image->getTypeImage();
+        $dto->ownerClass = $image->getOwnerClass();
+        $dto->ownerId = $image->getOwnerId();
+        return $dto;
+    }
+
+    public function mapImage(ImageCreateDto $dto): Image
+    {
+        $image = new Image(
+            $dto->name,
+            $dto->path,
+            $dto->typeImage,
+            $dto->ownerClass,
+            $dto->ownerId,
+        );
+        return $image;
     }
 }
