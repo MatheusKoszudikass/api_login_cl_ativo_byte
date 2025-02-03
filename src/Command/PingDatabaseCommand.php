@@ -26,35 +26,35 @@ class PingDatabaseCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        try{
+        try
+        {
+            $urls = [
+                'https://api.cliente.ativobyte.com.br/api/auth/verify',
+                'https://api.cliente.ativobyte.com.br/api/doc'
+            ];
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL,"https://api.cliente.ativobyte.com.br/api/auth/verify");
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($ch);
-
-            if($response)
+            foreach($urls as $url)
             {
-                $output->writeln("Banco de dados ativo". curl_getinfo($ch, CURLINFO_HTTP_CODE));
-                return Command::SUCCESS;
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL,$url); 
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $response = curl_exec($ch);
+
+                if($response)
+                {
+                    $output->writeln("Site pingado com sucesso.". curl_getinfo($ch, CURLINFO_HTTP_CODE));
+                    return Command::SUCCESS;
+                }
+
+                curl_close($ch);
             }
 
-            curl_close($ch);
-
-            // $connection = DriverManager::getConnection(['url' =>$_ENV['DATABASE_URL']]);
-            // $stmt = $connection->prepare("SELECT name From role");
-            // $result = $stmt->executeQuery();
-
-            // $row = $result->fetchAssociative();
-            // if ($row) {
-            //     $output->writeln('Banco de dados ativo, total de linhas! {$result->columnCount()}');
-            //     return Command::SUCCESS;
-            // }
-
-            $output->writeln('Falha ao pingar o banco de dados');
+            $output->writeln('Falha ao pingar.');
             return Command::FAILURE;
-        }catch(\Exception $e){
-            $output->writeln('Erro ao pingar o banco de dados:'. $e->getMessage());
+
+        }catch(\Exception $e)
+        {
+            $output->writeln('Erro ao pingar:'. $e->getMessage());
             return Command::FAILURE;
         }
     }
