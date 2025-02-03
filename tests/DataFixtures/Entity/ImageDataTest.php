@@ -2,6 +2,8 @@
 
 namespace Tests\DataFixtures\Entity;
 
+use App\Dto\Create\ImageCreateDto;
+use App\Dto\Response\ImageResponseDto;
 use App\Entity\Image;
 use App\Entity\Enum\TypeImageEnum;
 
@@ -10,9 +12,9 @@ class ImageDataTest
     public static function createImage(): Image
     {
         return new Image(
-            'avatar1',
-            'fake_path/avatar.png',
-            TypeImageEnum::AVATAR,
+            'user1',
+            'fake_path/user.png',
+            TypeImageEnum::USER,
             'User',
             '1'
         );
@@ -51,12 +53,12 @@ class ImageDataTest
         );
     }
 
-    public static function createAvatarImage(): Image
+    public static function createUserImage(): Image
     {
         return new Image(
-            'avatar2',
-            'fake_path/avatar.bmp',
-            TypeImageEnum::AVATAR,
+            'user2',
+            'fake_path/user.bmp',
+            TypeImageEnum::USER,
             'User',
             '5'
         );
@@ -71,6 +73,41 @@ class ImageDataTest
             'Product',
             '6'
         );
+    }
+
+    public static function createExceptionImage(): Image
+    {
+        return new Image(
+            '',
+            '',
+            TypeImageEnum::USER,
+            '',
+            '',
+        );
+    }
+
+    public static function createUserImageDto(): ImageCreateDto
+    {
+        $dto = new ImageCreateDto();
+        $dto->name = 'image1';
+        $dto->path = 'fake_path/image1.jpg';
+        $dto->typeImage = TypeImageEnum::USER;
+        $dto->ownerClass = 'User';
+        $dto->ownerId = '1';
+
+        return $dto;
+    }
+
+    public static function updateUserImageDto(): ImageCreateDto
+    {
+        $dto = new ImageCreateDto();
+        $dto->name = 'image1 edit';
+        $dto->path = 'fake_path/image1edit.jpg';
+        $dto->typeImage = TypeImageEnum::USER;
+        $dto->ownerClass = 'User';
+        $dto->ownerId = '2';
+
+        return $dto;
     }
 }
 
