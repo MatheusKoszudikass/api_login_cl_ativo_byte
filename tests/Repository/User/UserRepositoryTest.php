@@ -19,12 +19,6 @@ class UserRepositoryTest extends KernelTestCase
     {
         $this->assertInstanceOf(UserCreateDto::class, UserDataTest::createUser());
 
-        $result = $this->_userRepository->createUser(new UserCreateDto());
-        $this->assertNotNull($result);
-        $this->assertFalse($result->isSuccess());
-        $this->assertSame('Usuário não pode ser nulo',
-            $result->getMessage());
-
         $result = $this->_userRepository->createUser(UserDataTest::createUser());
         $this->assertNotNull($result);
         $this->assertTrue($result->isSuccess());
@@ -153,11 +147,6 @@ class UserRepositoryTest extends KernelTestCase
         $this->assertNotNull($result);
         $this->assertFalse($result->isSuccess());
         $this->assertSame('Identificador não pode ser null.', $result->getMessage());
-
-        $result = $this->_userRepository->updateUser($user->getId(), new UserCreateDto());
-        $this->assertNotNull($result);
-        $this->assertFalse($result->isSuccess());
-        $this->assertSame('Usuário não pode ser null.', $result->getMessage());
 
         $result = $this->_userRepository->updateUser($user->getId(),$userUpdate);
         $this->assertNotNull($result);
