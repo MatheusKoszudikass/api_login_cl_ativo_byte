@@ -3,84 +3,126 @@
 namespace Tests\Entity;
 
 use App\Entity\Enum\TypeImageExtensionEnum;
+use App\Entity\Enum\TypeImageEnum;
 use App\Entity\Image;
 use Tests\DataFixtures\Entity\ImageDataTest;
-use App\Entity\Enum\TypeImageEnum;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertInstanceOf;
+use InvalidArgumentException;
+use ValueError;
 
 class ImageFixtureTest extends KernelTestCase
 {
-    public function testCreateImageTeste(): void
+    public function testCreateImage(): void
     {
         $image = ImageDataTest::createImage();
-        assertInstanceOf(Image::class, $image);
-        assertEquals('avatar1', $image->getName());
-        assertEquals('fake_path/avatar.png', $image->getPath());
-        assertEquals(TypeImageEnum::AVATAR, $image->getTypeImage());
-        assertEquals('User', $image->getOwnerClass());
-        assertEquals('1', $image->getOwnerId());
-        assertEquals(TypeImageExtensionEnum::PNG, $image->getTypeImageExtension());
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertEquals('user1', $image->getName());
+        $this->assertEquals('fake_path/user.png', $image->getPath());
+        $this->assertEquals(TypeImageEnum::USER, $image->getTypeImage());
+        $this->assertEquals('User', $image->getOwnerClass());
+        $this->assertEquals('1', $image->getOwnerId());
+        $this->assertEquals(TypeImageExtensionEnum::PNG, $image->getTypeImageExtension());
     }
 
-    public function testCreateImageProductTeste(): void
+    public function testCreateImageProduct(): void
     {
         $image = ImageDataTest::createProductImage();
-        assertInstanceOf(Image::class, $image);
-        assertEquals('product1', $image->getName());
-        assertEquals('fake_path/product.jpg', $image->getPath());
-        assertEquals(TypeImageEnum::PRODUCT, $image->getTypeImage());
-        assertEquals('Product', $image->getOwnerClass());
-        assertEquals('2', $image->getOwnerId());
-        assertEquals(TypeImageExtensionEnum::JPG, $image->getTypeImageExtension());
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertEquals('product1', $image->getName());
+        $this->assertEquals('fake_path/product.jpg', $image->getPath());
+        $this->assertEquals(TypeImageEnum::PRODUCT, $image->getTypeImage());
+        $this->assertEquals('Product', $image->getOwnerClass());
+        $this->assertEquals('2', $image->getOwnerId());
+        $this->assertEquals(TypeImageExtensionEnum::JPG, $image->getTypeImageExtension());
     }
 
-    public function testCreateImageBannerTeste(): void
+    public function testCreateImageBanner(): void
     {
         $image = ImageDataTest::createBannerImage();
-        assertInstanceOf(Image::class, $image);
-        assertEquals('banner1', $image->getName());
-        assertEquals('fake_path/banner.jpeg', $image->getPath());
-        assertEquals(TypeImageEnum::BANNER, $image->getTypeImage());
-        assertEquals('Advertisement', $image->getOwnerClass());
-        assertEquals('3', $image->getOwnerId());
-        assertEquals(TypeImageExtensionEnum::JPEG, $image->getTypeImageExtension());
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertEquals('banner1', $image->getName());
+        $this->assertEquals('fake_path/banner.jpeg', $image->getPath());
+        $this->assertEquals(TypeImageEnum::BANNER, $image->getTypeImage());
+        $this->assertEquals('Advertisement', $image->getOwnerClass());
+        $this->assertEquals('3', $image->getOwnerId());
+        $this->assertEquals(TypeImageExtensionEnum::JPEG, $image->getTypeImageExtension());
     }
 
-    public function testCreateImageCoverTeste(): void
+    public function testCreateImageCover(): void
     {
         $image = ImageDataTest::createCoverImage();
-        assertInstanceOf(Image::class, $image);
-        assertEquals('cover1', $image->getName());
-        assertEquals('fake_path/cover.gif', $image->getPath());
-        assertEquals(TypeImageEnum::COVER, $image->getTypeImage());
-        assertEquals('Book', $image->getOwnerClass());
-        assertEquals('4', $image->getOwnerId());
-        assertEquals(TypeImageExtensionEnum::GIF, $image->getTypeImageExtension());
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertEquals('cover1', $image->getName());
+        $this->assertEquals('fake_path/cover.gif', $image->getPath());
+        $this->assertEquals(TypeImageEnum::COVER, $image->getTypeImage());
+        $this->assertEquals('Book', $image->getOwnerClass());
+        $this->assertEquals('4', $image->getOwnerId());
+        $this->assertEquals(TypeImageExtensionEnum::GIF, $image->getTypeImageExtension());
     }
 
     public function testCreateImageAvatar1Test(): void
     {
-        $image = ImageDataTest::createAvatarImage();
-        assertInstanceOf(Image::class, $image);
-        assertEquals('avatar2', $image->getName());
-        assertEquals('fake_path/avatar.bmp', $image->getPath());
-        assertEquals(TypeImageEnum::AVATAR, $image->getTypeImage());
-        assertEquals('User', $image->getOwnerClass());
-        assertEquals('5', $image->getOwnerId());
-        assertEquals(TypeImageExtensionEnum::BMP, $image->getTypeImageExtension()); 
+        $image = ImageDataTest::createUserImage();
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertEquals('user2', $image->getName());
+        $this->assertEquals('fake_path/user.bmp', $image->getPath());
+        $this->assertEquals(TypeImageEnum::USER, $image->getTypeImage());
+        $this->assertEquals('User', $image->getOwnerClass());
+        $this->assertEquals('5', $image->getOwnerId());
+        $this->assertEquals(TypeImageExtensionEnum::BMP, $image->getTypeImageExtension()); 
     }
 
     public function testCreateImageProduct1Test(): void
     {
         $image = ImageDataTest::createProduct1Image();
-        assertInstanceOf(Image::class, $image);
-        assertEquals('product1', $image->getName());
-        assertEquals('fake_path/product.webp', $image->getPath());
-        assertEquals(TypeImageEnum::PRODUCT, $image->getTypeImage());
-        assertEquals('Product', $image->getOwnerClass());
-        assertEquals('6', $image->getOwnerId());
-        assertEquals(TypeImageExtensionEnum::WEBP, $image->getTypeImageExtension());
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertEquals('product1', $image->getName());
+        $this->assertEquals('fake_path/product.webp', $image->getPath());
+        $this->assertEquals(TypeImageEnum::PRODUCT, $image->getTypeImage());
+        $this->assertEquals('Product', $image->getOwnerClass());
+        $this->assertEquals('6', $image->getOwnerId());
+        $this->assertEquals(TypeImageExtensionEnum::WEBP, $image->getTypeImageExtension());
+    }
+
+    public function testCreateImageNameException(): void 
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("O nome da imagem não pode ser vazio.");
+        ImageDataTest::createUserImage()->setName('');
+    }
+
+    public function testCreateImagePathException(): void 
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("O campo 'path' não pode ser vazio.");
+        ImageDataTest::createUserImage()->setPath('');
+    }
+
+    public function testCreateImageTypeImageException(): void 
+    {
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage( '"" is not a valid backing');
+        ImageDataTest::createUserImage()->setTypeImage(TypeImageEnum::from(''));
+    }
+
+    public function testCreateImageTypeImageExtensionException(): void 
+    {
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage( '"" is not a valid backing');
+        ImageDataTest::createUserImage()->setTypeImageExtension(TypeImageExtensionEnum::from(''));
+    }
+
+    public function testCreateImageOwnerCalssException(): void 
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("O campo 'ownerClass' não pode ser vazio.");
+        ImageDataTest::createUserImage()->setOwnerClass('');
+    }
+
+    public function testCreateImageOwneridException(): void
+    {
+         $this->expectException(InvalidArgumentException::class);
+         $this->expectExceptionMessage("O campo 'ownerId' não pode ser vazio.");
+         ImageDataTest::createUserImage()->setOwnerId('');
     }
 }
