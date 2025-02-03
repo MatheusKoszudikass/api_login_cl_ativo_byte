@@ -10,9 +10,9 @@ abstract class BaseEntityDto
         $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
 
         foreach ($properties as $property) {
-            if (!empty($property->getValue($this))) {
-                return false;
-            }
+            $value = $property->getValue($this);
+
+            if(!is_null($value) && $value != '')  return false;
         }
 
         return true;
