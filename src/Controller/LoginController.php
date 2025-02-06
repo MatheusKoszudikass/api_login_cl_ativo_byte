@@ -3,8 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\LoginDto;
-use App\Interface\LoginRepositoryInterface;
-use App\Result\ResultOperation;
+use App\Interface\Service\LoginServiceInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -15,8 +14,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class LoginController extends AbstractController
 {
-    private LoginRepositoryInterface $_loginRepostory;
-    public function __construct(LoginRepositoryInterface $loginRepostory)
+    private LoginServiceInterface $_loginRepostory;
+    public function __construct(LoginServiceInterface $loginRepostory)
     {
         $this->_loginRepostory = $loginRepostory;
     }

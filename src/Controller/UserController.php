@@ -5,20 +5,20 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Interface\UserRepositoryInterface;
 use App\Dto\Create\UserCreateDto;
-use App\Dto\RecoveryAccount;
+use App\Util\RecoveryAccount;
+use App\Interface\Service\UserServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
-use App\Result\ResultOperation;
+use App\Util\ResultOperation;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 
 class UserController extends AbstractController
 {
-    private UserRepositoryInterface $_userRepositoryInterface;
+    private UserServiceInterface $_userServiceInterface;
 
-    public function __construct(UserRepositoryInterface $userRepositoryInterface)
+    public function __construct(UserServiceInterface $userServiceInterface)
     {
-        $this->_userRepositoryInterface = $userRepositoryInterface;
+        $this->_userServiceInterface = $userServiceInterface;
     }
 
     /**
@@ -30,7 +30,7 @@ class UserController extends AbstractController
     #[Route('/api/user/add', methods: ['POST'], name: 'api_user_add')]
     public function add(#[MapRequestPayload] UserCreateDto $userDto): JsonResponse
     {
-        $result = $this->_userRepositoryInterface->createUser($userDto);
+        $result = $this->_userServiceInterface->createUser($userDto);
 
         return $this->json($result);
     }
@@ -46,7 +46,7 @@ class UserController extends AbstractController
     {
         $token = $request->query->get('token');
 
-        return $this->json($this->_userRepositoryInterface->enableTwoFactorAuth($token));
+        return $this->json($this->_userServiceInterface->enableTwoFactorAuth($token));
     }
 
     /**
@@ -58,7 +58,7 @@ class UserController extends AbstractController
     #[Route('/api/user/validade', methods: ['POST'], name: 'api_user_validadeUser')]
     public function validade(#[MapRequestPayload] UserCreateDto $userDto): JsonResponse
     {
-        return $this->json($this->_userRepositoryInterface->validateUser($userDto));
+        return $this->json($this->_userServiceInterface->validateUser($userDto));
     }
 
     #[Route('/api/user/exist', methods: ['POST'], name: 'api_user_verifyUserExist')]
@@ -72,7 +72,7 @@ class UserController extends AbstractController
         }
     
         // Verificação do usuário
-        $exists = $this->_userRepositoryInterface->userExists($identifier);
+        $exists = $this->_userServiceInterface->userExists($identifier);
     
         return $this->json($exists);
     }
@@ -89,7 +89,7 @@ class UserController extends AbstractController
     {
         $id = $request->query->get('id');
 
-        return $this->json($this->_userRepositoryInterface->updateUser($id, $userDto));
+        return $this->json($this->_userServiceInterface->updateUser($id, $userDto));
     }
 
     /**
@@ -103,7 +103,7 @@ class UserController extends AbstractController
     {
         $token = $request->query->get('id');
 
-        return $this->json($this->_userRepositoryInterface->deleteUserById($token));
+        return $this->json($this->_userServiceInterface->deleteUserById($token));
     }
 
 
@@ -120,7 +120,7 @@ class UserController extends AbstractController
 
         if ($token != null) 
         {
-            $result = $this->_userRepositoryInterface->findUserJwt($token);
+            $result = $this->_userServiceInterface->findUserJwt($token);
             return $this->json($result, 200);
         }
 
@@ -140,7 +140,7 @@ class UserController extends AbstractController
     {
         $id = $request->query->get('id');
 
-        return $this->json($this->_userRepositoryInterface->findUserById($id));
+        return $this->json($this->_userServiceInterface->findUserById($id));
     }
 
     /**
@@ -156,7 +156,7 @@ class UserController extends AbstractController
     {
         $email = $request->query->get('email');
 
-        return $this->json($this->_userRepositoryInterface->findUserByEmail($email));
+        return $this->json($this->_userServiceInterface->findUserByEmail($email));
     }
 
     /**
@@ -172,7 +172,7 @@ class UserController extends AbstractController
     {
         $userName = $request->query->get('userName');
 
-        return $this->json($this->_userRepositoryInterface->findUserByUserName($userName));
+        return $this->json($this->_userServiceInterface->findUserByUserName($userName));
     }
 
     /**
@@ -188,7 +188,7 @@ class UserController extends AbstractController
     {
         $document = $request->query->get('document');
 
-        return $this->json($this->_userRepositoryInterface->findUserByDocument($document));
+        return $this->json($this->_userServiceInterface->findUserByDocument($document));
     }
 
     /**
@@ -206,7 +206,7 @@ class UserController extends AbstractController
 
         if(empty($token)) return $this->json(false, 200);
 
-        return $this->json($this->_userRepositoryInterface->verifyTokenRecoveryAccount($token));
+        return $this->json($this->_userServiceInterface->verifyTokenRecoveryAccount($token));
     }
 
     /**
@@ -226,7 +226,7 @@ class UserController extends AbstractController
             false, 'Token nao pode ser null'));
             
         return $this->json(
-            $this->_userRepositoryInterface->confirmPasswordReset(
+            $this->_userServiceInterface->confirmPasswordReset(
                 $recovery->token, $recovery->password));
     }
 }

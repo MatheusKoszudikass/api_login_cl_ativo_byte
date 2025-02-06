@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Dto\Create\RoleCreateDto;
-use App\Interface\RoleRepositoryInterface;
+use App\Interface\Repository\RoleRepositoryInterface;
 use App\Repository\RoleRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
