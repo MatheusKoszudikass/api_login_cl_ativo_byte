@@ -19,6 +19,10 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Repository\BaseRepository:
+        arguments:
+            $typeEntitiesEnum: !php/const App\Entity\Enum\TypeEntitiesEnum::LOGIN
         
 
     # add more service definitions when explicit configuration is needed
