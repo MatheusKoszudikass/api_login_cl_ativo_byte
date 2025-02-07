@@ -5,46 +5,43 @@ namespace App\Repository;
 use App\Entity\Role;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use App\Interface\RoleRepositoryInterface;
+use App\Interface\Repository\RoleRepositoryInterface;
 use App\Dto\Create\RoleCreateDto;
-use App\Dto\Response\RoleResponseDto;
-use App\Result\ResultOperation;
-use App\Service\MapperServiceCreate;
-use App\Service\MapperServiceResponse;
+use App\Util\ResultOperation;
+use App\Service\Mapper\MapperCreateService;
+use App\Service\Mapper\MapperResponseService;
 use Exception;
-use LDAP\Result;
 
 /**
  * @extends ServiceEntityRepository<Role>
  */
 class RoleRepository extends ServiceEntityRepository implements RoleRepositoryInterface
 {
-    private MapperServiceCreate $_mapperServiceCreate;
-    private MapperServiceResponse $_mapperServiceResponse;
+    private MapperCreateService $_mapperCreateService;
+    private MapperResponseService $_mapperResponseService;
 
-    public function __construct(ManagerRegistry $registry, MapperServiceCreate $mapperServiceCreate, MapperServiceResponse $mapperServiceResponse)
+    public function __construct(ManagerRegistry $registry, MapperCreateService $mapperCreateService,
+     MapperResponseService $mapperResponseService)
     {
         parent::__construct($registry, Role::class);
-        $this->_mapperServiceCreate = $mapperServiceCreate;
-        $this->_mapperServiceResponse = $mapperServiceResponse;
+        $this->_mapperCreateService = $mapperCreateService;
+        $this->_mapperResponseService = $mapperResponseService;
     }
 
 
     public function createRole(RoleCreateDto $role): ResultOperation
     {
-        if ($role->isEmpty()) {
-            return new ResultOperation(false, 'Role não pode ser null.');
-        }
+        if (!$role->isEmpty()) return new ResultOperation(false, 'Role não pode ser null.');
 
         try {
             $result = $this->roleExists($role->name);
             if ($result->isSuccess() == true) return $result;
             
-            $role = $this->_mapperServiceCreate->mapRole($role);
+            $role = $this->_mapperCreateService->mapRole($role);
             $this->getEntityManager()->persist($role);
             $this->getEntityManager()->flush();
 
-            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
+            $result = $this->_mapperResponseService->mapRoleToDto($role);
 
             return new ResultOperation(true, 'Role criado com sucesso.');
 
@@ -81,7 +78,7 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
         if(empty($id)|| $id == null) return new ResultOperation(
             false, 'Identificador não pode ser null.');
 
-        if($roleDto == null || $roleDto->isEmpty()) return new ResultOperation(
+        if(!$roleDto->isEmpty()) return new ResultOperation(
             false, 'Role não pode ser null.');
         
 
@@ -117,7 +114,7 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
             if ($role == null) return new ResultOperation(
                 false, 'Nenhuma role encontrada com o identificador fornecido.');
 
-            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
+            $result = $this->_mapperResponseService->mapRoleToDto($role);
 
             return new ResultOperation(true, 'Role encontrado com sucesso.', data: [$result]);
 
@@ -142,7 +139,7 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
                 return new ResultOperation(false, 'Nenhuma role encontrada com o identificador fornecido.');
             }
 
-            $result = $this->_mapperServiceResponse->mapRoleToDto($role);
+            $result = $this->_mapperResponseService->mapRoleToDto($role);
 
             return new ResultOperation(true, 'Role encontrado com sucesso.', data: [$result]);
 
@@ -158,7 +155,7 @@ class RoleRepository extends ServiceEntityRepository implements RoleRepositoryIn
             $roles = $this->getEntityManager()->getRepository(Role::class)->findAll();
             $roleResponseDtos = [];
             foreach ($roles as $role) {
-                $roleResponseDto = $this->_mapperServiceResponse->mapRoleToDto($role);
+                $roleResponseDto = $this->_mapperResponseService->mapRoleToDto($role);
                 $roleResponseDtos[] = $roleResponseDto;
             }
             return new ResultOperation(true, 'Roles sucesso.',  $roleResponseDtos);
