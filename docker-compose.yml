@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -14,9 +12,11 @@ services:
       APP_ENV: prod
     depends_on:
       - db
+    # networks:
+    #   - api_cl_ativo_byte
 
   db:
-    image: mysql
+    image: mysql:8.0
     restart: always
     container_name: symfony_db
     environment:
@@ -28,7 +28,9 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
 
 volumes:
   mysql_data:
     driver: local
+

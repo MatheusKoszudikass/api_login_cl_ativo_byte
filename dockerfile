@@ -1,5 +1,5 @@
-# Usar uma imagem oficial do PHP
-FROM php:8.3-fpm
+# Usar uma imagem oficial do PHP CLI
+FROM php:8.2-cli
 
 # Instalar dependências do sistema e extensões do PHP
 RUN apt-get update && apt-get install -y \
@@ -15,11 +15,6 @@ RUN apt-get update && apt-get install -y \
     pdo_mysql \
     zip
 
-RUN curl -sS https://get.symfony.com/cli/installer | bash \
-    && mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
-# Limpeza para reduzir o tamanho da imagem
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Instalar Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
@@ -32,14 +27,18 @@ COPY . .
 # Instalar dependências do Symfony
 RUN composer install --no-dev --optimize-autoloader 
 
-# Alterar permissões
-RUN chown -R www-data:www-data /var/www/symfony
+# Ajustar permissões dos diretórios de cache e logs
+RUN chmod -R 777 var/cache var/log
+
+# Migração dos dados
+# RUN php bin/console doctrine:migrations:diff
+# RUN php bin/console doctrine:migrations:migrate
 
 # Configurar variáveis de ambiente
 ENV APP_ENV=prod
 
-# Expor a porta usada pelo PHP-FPM
-EXPOSE 9000
+# Expor a porta usada pelo PHP CLI
+EXPOSE 8000
 
 # Comando inicial do container
-CMD ["php-fpm"]
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
