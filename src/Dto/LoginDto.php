@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-class LoginDto
+class LoginDto extends BaseEntityDto
 {
     public string $emailUserName = '';
     public string $password = '';
