@@ -24,12 +24,12 @@ class ImageCreateDto extends BaseEntityDto
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
-    #[Assert\Length(max: 15, maxMessage: 'A extensão da imagem deve ter no máximo 15 caracteres')]
+    #[Assert\Length(max: 15, maxMessage: 'A classe do propriário da imagem deve ter no máximo 15 caracteres')]
     public string $ownerClass = '';
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
-    #[Assert\Length(max: 50, maxMessage: 'O ID do propriário deve ter no máximo 50 caracteres')]
+    #[Assert\Length(max: 36, maxMessage: 'O ID do propriário da imagem deve ter no máximo 36 caracteres')]
     public string $ownerId = '';
 }
 
