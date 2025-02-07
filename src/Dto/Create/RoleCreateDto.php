@@ -7,8 +7,6 @@ use App\Dto\BaseEntityDto;
 
 class RoleCreateDto extends BaseEntityDto
 {
-    public string $id = '';
-
     #[Assert\NotBlank]
     public string $name = '';
 
