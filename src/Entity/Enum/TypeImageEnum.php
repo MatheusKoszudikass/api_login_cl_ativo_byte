@@ -7,8 +7,8 @@ use App\Entity\User;
 
 enum TypeImageEnum: string
 {
-    case USER = User::class;
-    case PRODUCT = 'product';
-    case BANNER = 'banner';
-    case COVER = 'cover';
+    case USER = 'User';
+    case PRODUCT = 'Product';
+    case BANNER = 'Banner';
+    case COVER = 'Cover';
 }

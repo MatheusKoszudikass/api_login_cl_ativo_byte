@@ -74,15 +74,15 @@ class Login extends BaseEntity
         return $this->lastLoginAttempt;
     }
 
-    public function setLastLoginAttempt(\DateTimeInterface $lastLoginAttempt): static
+    public function setLastLoginAttempt(): static
     {
         $currentTime = new \DateTime('now');
         
-        if (!$lastLoginAttempt) {
+        if (!$this->lastLoginAttempt) {
             throw new \InvalidArgumentException('O parâmetro $lastLoginAttempt não pode ser nulo.');
         }
     
-        $interval = $currentTime->diff($lastLoginAttempt);
+        $interval = $currentTime->diff($this->lastLoginAttempt);
     
         if ($interval->i > 0 || $interval->h > 0 || $interval->d > 0) {
             $this->lastLoginAttempt = $currentTime;
