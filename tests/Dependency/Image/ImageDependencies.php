@@ -2,12 +2,12 @@
 
 namespace Tests\Dependency\Image;
 
-use App\Dto\DoctrineFindParams;
 use App\Entity\Image;
-use App\Service\ImageService;
-use App\Service\MapperServiceCreate;
 use App\Repository\ImageRepository;
-use App\Interface\ImageRepositoryInterface;
+use App\Service\Image\ImageService;
+use App\Service\Mapper\MapperCreateService;
+use App\Service\Util\ResultOperationService;
+use App\Util\DoctrineFindParams;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Tests\Dependency\DatabaseTestCase;
@@ -20,13 +20,14 @@ class ImageDependencies extends KernelTestCase
         $dataBase->setUp();
         $container = static::getContainer();
 
-        $imageRepositoryInterface = $container->get(ImageRepositoryInterface::class);
-        $mapperServiceCreate = $container->get(MapperServiceCreate::class);
+        $mapperServiceCreate = $container->get(MapperCreateService::class);
+        $resultOperation = $container->get(ResultOperationService::class);
 
 
         return new ImageService(
-            $imageRepositoryInterface,
-            $mapperServiceCreate
+            $container->get(ManagerRegistry::class),
+            $container->get(MapperCreateService::class),
+            $container->get(ResultOperationService::class)
         );
     }
 
@@ -39,9 +40,11 @@ class ImageDependencies extends KernelTestCase
     }
 
     public static function getImageByTest(DoctrineFindParams $doctrineFindParams): ?Image
-    {    
+    {
         return static::getContainer()->get(
-            'doctrine')->getManager()->getRepository(
-                Image::class)->findOneBy($doctrineFindParams->toArrayParams());
+            'doctrine'
+        )->getManager()->getRepository(
+            Image::class
+        )->findOneBy($doctrineFindParams->toArrayParams());
     }
 }

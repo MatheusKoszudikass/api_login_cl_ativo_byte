@@ -4,8 +4,8 @@ namespace Tests\Dependency\Role;
 
 use App\Entity\Role;
 use App\Repository\RoleRepository;
-use App\Service\MapperServiceCreate;
-use App\Service\MapperServiceResponse;
+use App\Service\Mapper\MapperCreateService;
+use App\Service\Mapper\MapperResponseService;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Tests\Dependency\DatabaseTestCase;
 use Doctrine\Persistence\ManagerRegistry;
@@ -18,8 +18,8 @@ class RoleDependencies extends KernelTestCase
         $database->setUp();
         $container = static::getContainer();
         
-        $mapperServiceCreate = $container->get(MapperServiceCreate::class);
-        $mapperServiceResponse = $container->get(MapperServiceResponse::class);
+        $mapperServiceCreate = $container->get(MapperCreateService::class);
+        $mapperServiceResponse = $container->get(MapperResponseService::class);
         $entityManager = $container->get(ManagerRegistry::class);
         
         return new RoleRepository(

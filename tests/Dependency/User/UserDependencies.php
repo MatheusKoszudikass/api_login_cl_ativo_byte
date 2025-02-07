@@ -3,39 +3,32 @@
 namespace Tests\Dependency\User;
 
 use App\Entity\User;
-use App\Repository\RoleRepository;
-use App\Service\MapperServiceCreate;
-use App\Service\MapperServiceResponse;
-use App\Service\EmailService;
-use App\Service\TwoFactorAuthService;
+use App\Service\Email\EmailService;
+use App\Service\Mapper\MapperCreateService;
+use App\Service\Mapper\MapperResponseService;
+use App\Service\Util\ResultOperationService;
+use App\Service\Auth\TwoFactorAuthService;
+use App\Service\User\UserService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use App\Repository\UserRepository;
 use Tests\Dependency\DatabaseTestCase;
 
 class UserDependencies extends KernelTestCase
 {
 
-    public function userRepository(): UserRepository
+    public function userService(): UserService
     {
         $database = new DatabaseTestCase();
         $database->setUp();
         $container = static::getContainer();
-        
-        $roleRepository = $container->get(RoleRepository::class);
-        $mapperServiceCreate = $container->get(MapperServiceCreate::class);
-        $mapperServiceResponse = $container->get(MapperServiceResponse::class);
-        $mailer = $container->get(EmailService::class);
-        $twoFactorAuthService = $container->get(TwoFactorAuthService::class);
-        $entityManager = $container->get(ManagerRegistry::class);
 
-        return new UserRepository(
-            $entityManager, 
-            $roleRepository,
-            $mapperServiceCreate,
-            $mapperServiceResponse,
-            $mailer,
-            $twoFactorAuthService
+        return new UserService(
+            $container->get(ManagerRegistry::class),
+            $container->get(MapperCreateService::class),
+            $container->get(MapperResponseService::class),
+            $container->get(ResultOperationService::class),
+            $container->get(TwoFactorAuthService::class),
+            $container->get(EmailService::class)
         ); 
     }
 
