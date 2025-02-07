@@ -12,7 +12,7 @@ abstract class BaseEntityDto
         foreach ($properties as $property) {
             $value = $property->getValue($this);
 
-            if(!is_null($value) && $value != '')  return false;
+            if(is_null($value) || $value == "")  return false;
         }
 
         return true;
