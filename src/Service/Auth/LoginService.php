@@ -47,7 +47,7 @@ class LoginService extends BaseRepository implements LoginServiceInterface
 
     public function Login(LoginDto $loginDto): ResultOperation
     {
-        if ($loginDto->isEmpty()) return $this->_resultOperationService->createFailure(
+        if (empty($loginDto)) return $this->_resultOperationService->createFailure(
             'Login não pode ser nulo'
         );
 
