@@ -37,11 +37,17 @@ abstract class BaseEntity
     }
 
     /**
-     * Executes a binary that makes an UUID and return it
+     * Executes a binary that makes an UUID, checks it and, at all, return it
      */
     private function generateUuid(): string
     {
-        return trim(shell_exec("./../dependencies/bin/UUID_GENERATOR"));
+       $output = shell_exec("./../dependencies/bin/UUID_GENERATOR 2>&1");
+        if ($output === null) {
+            // Checks if that worked
+            echo "Failed to make a UUID";
+        } else {
+            return trim($output);
+        }
     }
 
     public function getId(): string 
