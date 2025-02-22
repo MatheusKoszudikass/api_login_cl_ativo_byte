@@ -12,9 +12,6 @@ use App\Service\Mapper\MapperCreateService;
 use App\Service\Mapper\MapperResponseService;
 use Exception;
 
-/**
- * @extends ServiceEntityRepository<Role>
- */
 class RoleRepository extends ServiceEntityRepository implements RoleRepositoryInterface
 {
     private MapperCreateService $_mapperCreateService;
