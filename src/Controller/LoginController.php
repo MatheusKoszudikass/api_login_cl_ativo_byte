@@ -61,15 +61,15 @@ class LoginController extends AbstractController
         $expire = $remember ? time() + 60 * 60 * 24 * 30 : 0;
 
         return new Cookie(
-            $_ENV['COOKIE_NAME'],                            // Cookie name
-            $token,                                        // Token value
-            $expire,                                     // Expiration time(1, for example)
-            $_ENV['COOKIE_PATH'],                         // Cookie path, where it will be accessible("/" means accessible throughout the application)
-            $_ENV['COOKIE_DOMAIN'],                    // Cookie domain(leave null for the current domain)
-            $_ENV['COOKIE_SECURE'],                   // Secure: send only if using HTTTPS
-            $_ENV['COOKIE_HTTP_ONLY'],             // HttpOnly: ensure that the cookie is not accessed by javaScript 
-            $_ENV['COOKIE_RAW'],                       // SameSite: defines whether the cookie can be sent with cross-site requests
-            $_ENV['COOKIE_SAMESITE']             // Raw: if you want to send the value as is (without coding)
+            $_ENV['COOKIE_NAME'],                            
+            $token,                                        
+            $expire,                                     
+            $_ENV['COOKIE_PATH'],                         
+            $_ENV['COOKIE_DOMAIN'],                    
+            $_ENV['COOKIE_SECURE'],                   
+            $_ENV['COOKIE_HTTP_ONLY'],             
+            $_ENV['COOKIE_RAW'],                       
+            $_ENV['COOKIE_SAMESITE']             
         );
     }
     
