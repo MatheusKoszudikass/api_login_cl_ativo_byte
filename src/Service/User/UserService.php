@@ -295,18 +295,18 @@ class UserService extends BaseRepository implements UserServiceInterface
     }
 
     /**
-     * Verifica se o token de recuperação de senha existe no banco de dados e
-     * não expirou.
+     * Checks if the password recovery token exists in the database and
+     * has not expired.
      *
-     * Verifica se o token de recuperação de senha existe no banco de dados,
-     * filtrando por token e verificando se a data de expiração é maior que a
-     * data atual.
+     * It checks if the password recovery token exists in the database,
+     * filtering by token and verifying if the expiration date is greater than the
+     * current date.
      *
-     * Se o token for vazio, retorna false.
+     * If the token is empty, it returns false.
      *
-     * @param string $token O token de recuperação de senha a ser verificado.
-     * @return bool True se o token existe e não expirou, false caso contrário.
-     * @throws Exception Se ocorrer um erro ao verificar o token no banco de dados.
+     * @param string $token The password recovery token to be checked.
+     * @return bool True if the token exists and has not expired, false otherwise.
+     * @throws Exception If an error occurs while checking the token in the database.
      */
     public function verifyTokenRecoveryAccount(string $token): bool
     {
@@ -331,13 +331,13 @@ class UserService extends BaseRepository implements UserServiceInterface
     }
 
     /**
-     * Verifica se o token de recuperação de senha expirou.
+     * Checks if the password recovery token has expired.
      *
-     * Verifica se o token de recuperação de senha do usuário está nulo e
-     * se o token expirou com base no método do objeto User.
+     * It checks if the user's password recovery token is null and
+     * if the token has expired based on the User object's method.
      *
-     * @param User $user O objeto User a ser verificado
-     * @return bool True se o token expirou, false caso contrário
+     * @param User $user The User object to be checked.
+     * @return bool True if the token has expired, false otherwise.
      */
     public function verifyTokenExpiredRecoveryAccount(User $user): bool
     {
@@ -355,13 +355,13 @@ class UserService extends BaseRepository implements UserServiceInterface
 
 
     /**
-     * Procura um usuário por email ou nome de usuário.
+     * Searches for a user by email or username.
      *
-     * Se o $identifier for um email, procura um usuário com o email fornecido.
-     * Caso não encontre, procura um usuário com o nome de usuário fornecido.
+     * If the $identifier is an email, it searches for a user with the provided email.
+     * If not found, it searches for a user with the provided username.
      *
-     * @param string $identifier O email ou nome de usuário a ser procurado
-     * @return User|null O usuário encontrado ou null caso não encontre
+     * @param string $identifier The email or username to be searched.
+     * @return User|null The user found or null if not found.
      */
     public function findUserByEmailOrUsername(string $identifier): ?User
     {
@@ -375,9 +375,9 @@ class UserService extends BaseRepository implements UserServiceInterface
     }
 
     /**
-     * Envia um email para o usuário com um token de ativação da conta.
+     * Sends an email to the user with an account activation token.
      *
-     * @param UserResponseDto $userDto O DTO do usuário que precisa ativar sua conta
+     * @param UserResponseDto $userDto The user DTO that needs to activate their account.
      */
     private function sendTwoFactorActivationEmail(UserResponseDto $userDto, $token): void
     {
@@ -386,16 +386,16 @@ class UserService extends BaseRepository implements UserServiceInterface
     }
 
     /**
-     * Atualiza o token de autenticação de dois fatores de um usuário.
+     * Updates a user's two-factor authentication token.
      *
-     * Define um novo token de dois fatores para o usuário e ajusta a data de expiração para um dia à frente.
-     * Persiste as alterações no banco de dados e mapeia a entidade User de volta para um UserResponseDto.
+     * Sets a new two-factor token for the user and adjusts the expiration date to one day ahead.
+     * Persists the changes in the database and maps the User entity back to a UserResponseDto.
      *
-     * @param User $user A entidade User cujo token será atualizado.
-     * @param string $token O novo token de dois fatores a ser definido.
-     * @return UserResponseDto O DTO do usuário atualizado.
-     * @throws \InvalidArgumentException Se o token fornecido for nulo.
-     * @throws Exception Em caso de erro durante a atualização do token.
+     * @param User $user The User entity whose token will be updated.
+     * @param string $token The new two-factor token to be set.
+     * @return UserResponseDto The updated user DTO.
+     * @throws \InvalidArgumentException If the provided token is null.
+     * @throws Exception If an error occurs during the token update.
      */
     private function updateToken(User $user, string $token): UserResponseDto
     {
@@ -418,19 +418,19 @@ class UserService extends BaseRepository implements UserServiceInterface
     }
 
     /**
-     * Atualiza as informações de um usuário.
+     * Updates a user's information.
      *
-     * Verifica se o $userDto é nulo e lança uma exceção com uma mensagem apropriada.
-     * Tenta encontrar o usuário com o ID fornecido no $userDto.
-     * Se o usuário não for encontrado, lança uma exceção com uma mensagem apropriada.
-     * Atualiza as informações do usuário com os dados fornecidos no $userDto.
-     * Persiste as alterações no banco de dados e flusha as alterações.
-     * Retorna uma operação de resultado com uma mensagem de sucesso.
-     * Em caso de erro, lança uma exceção com a mensagem detalhada.
+     * Checks if the $userDto is null and throws an exception with an appropriate message.
+     * Attempts to find the user with the provided ID in the $userDto.
+     * If the user is not found, throws an exception with an appropriate message.
+     * Updates the user's information with the data provided in the $userDto.
+     * Persists the changes in the database and flushes the changes.
+     * Returns an operation result with a success message.
+     * In case of an error, throws an exception with the detailed message.
      *
-     * @param UserCreateDto $userDto O DTO do usuário a ser atualizado.
-     * @return ResultOperation A operação de resultado com a mensagem e os dados do usuário atualizado.
-     * @throws Exception Em caso de erro durante a atualização do usuário.
+     * @param UserCreateDto $userDto The DTO of the user to be updated.
+     * @return ResultOperation The operation result with the message and updated user data.
+     * @throws Exception If an error occurs during the user update.
      */
     public function updateUser(string $id, UserCreateDto $userDto): ResultOperation
     {
@@ -463,21 +463,19 @@ class UserService extends BaseRepository implements UserServiceInterface
             throw new Exception(false, 'Erro ao atualizar usuário: ' . $e->getMessage());
         }
     }
-
+    
     /**
-     * Remove um usuário do banco de dados com base no ID fornecido.
+     * Removes a user from the database based on the provided ID.
      *
-     * Verifica se o ID é nulo e retorna uma falha se for o caso.
-     * Caso o usuário não seja encontrado, retorna uma mensagem de falha.
-     * Caso contrário, remove o usuário e salva as alterações,
-     * retornando uma mensagem de sucesso.
+     * Checks if the ID is null and returns a failure if that is the case.
+     * If the user is not found, returns a failure message.
+     * Otherwise, removes the user and saves the changes,
+     * returning a success message.
      *
-     * @param string $id O ID do usuário a ser removido.
-     * @return ResultOperation A operação de resultado com a mensagem de sucesso ou erro.
-     * @throws Exception Em caso de erro ao tentar remover o usuário.
+     * @param string $id The ID of the user to be removed.
+     * @return ResultOperation The operation result with the success or error message.
+     * @throws Exception If an error occurs while trying to remove the user.
      */
-
-
     public function deleteUserById(string $id): ResultOperation
     {
         if (empty($id)) {
@@ -524,15 +522,15 @@ class UserService extends BaseRepository implements UserServiceInterface
 
 
     /**
-     * Busca um usuário por ID.
+     * Searches for a user by ID.
      *
-     * Verifica se o ID é nulo e retorna null se for o caso.
-     * Caso o usuário não seja encontrado, retorna null.
-     * Caso contrário, retorna o usuário encontrado.
+     * Checks if the ID is null and returns null if that is the case.
+     * If the user is not found, returns null.
+     * Otherwise, returns the found user.
      *
-     * @param string $id O ID do usuário a ser buscado.
-     * @return ResultOperation|null O usuário encontrado ou null caso não encontre.
-     * @throws Exception Em caso de erro ao tentar buscar o usuário.
+     * @param string $id The ID of the user to be searched.
+     * @return ResultOperation|null The found user or null if not found.
+     * @throws Exception If an error occurs while trying to search for the user.
      */
     public function findUserById(string $id): ?ResultOperation
     {
@@ -556,15 +554,15 @@ class UserService extends BaseRepository implements UserServiceInterface
     }
 
     /**
-     * Busca um usuário pelo email.
+     * Searches for a user by email.
      *
-     * Verifica se o email é nulo e retorna uma falha se for o caso.
-     * Caso o usuário não seja encontrado, retorna uma mensagem de falha.
-     * Caso contrário, retorna um ResultOperation com o usuário encontrado.
+     * Checks if the email is null and returns a failure if that is the case.
+     * If the user is not found, returns a failure message.
+     * Otherwise, returns a ResultOperation with the found user.
      *
-     * @param string $email O email do usuário a ser buscado.
-     * @return ResultOperation O ResultOperation com o usuário encontrado ou uma mensagem de erro.
-     * @throws Exception Em caso de erro ao tentar buscar o usuário pelo email.
+     * @param string $email The email of the user to be searched.
+     * @return ResultOperation The ResultOperation with the found user or an error message.
+     * @throws Exception If an error occurs while trying to search for the user by email.
      */
     public function findUserByEmail(string $email): ?ResultOperation
     {
