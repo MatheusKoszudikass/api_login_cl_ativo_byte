@@ -1,5 +1,3 @@
-<?php
-
 namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
@@ -24,30 +22,40 @@ abstract class BaseEntity
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     protected DateTime $systemAccess;
 
+    // Path to the UUID_GENERATOR binary
+    private string $uuidGeneratorPath;
+
     public function __construct()
     {
+        // Initialize UUID generator path
+        $this->uuidGeneratorPath = __DIR__ . "/../dependencies/bin/UUID_GENERATOR";
+
         $this->id = $this->generateUuid();
         $this->dateCreated = new DateTime('now');
         $this->dateUpdated = new DateTime('now');
         $this->systemAccess = new DateTime('now');
 
-        if (!is_executable("../dependencies/bin/UUID_GENERATOR")) {
-            shell_exec("chmod +x ../dependencies/bin/UUID_GENERATOR");
+        // Checks if the UUID_GENERATOR binary is executable
+        if (!is_executable($this->uuidGeneratorPath)) {
+            // Changes permissions only if necessary
+            shell_exec("chmod +x $this->uuidGeneratorPath");
         }
     }
 
     /**
-     * Executes a binary that makes an UUID, checks it and, at all, return it
+     * Executes the binary that generates a UUID, checks if it worked, and returns the UUID
      */
     private function generateUuid(): string
     {
-       $output = shell_exec("./../dependencies/bin/UUID_GENERATOR 2>&1");
-        if ($output === null) {
-            // Checks if that worked
-            echo "Failed to make a UUID";
-        } else {
-            return trim($output);
+        $output = shell_exec($this->uuidGeneratorPath);
+        
+        // Checks if the execution was successful
+        if ($output === null || trim($output) === '') {
+            // If it fails, throws an exception
+            throw new \Exception("Failed to generate a UUID. Check if the UUID_GENERATOR binary is accessible.");
         }
+        
+        return trim($output);
     }
 
     public function getId(): string 
@@ -58,13 +66,13 @@ abstract class BaseEntity
     /**
      * Sets the system access date to the current date and time
      */
-    public function setSystemAccess() : void 
+    public function setSystemAccess(): void 
     {
-      $this->systemAccess = new DateTime('now');
+        $this->systemAccess = new DateTime('now');
     }
 
     /**
-     * Checks if the object is empty, i.e. if all its public properties are empty
+     * Checks if the object is empty, i.e., if all its public properties are empty
      *
      * @return bool
      */
