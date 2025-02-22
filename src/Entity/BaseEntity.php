@@ -30,26 +30,18 @@ abstract class BaseEntity
         $this->dateCreated = new DateTime('now');
         $this->dateUpdated = new DateTime('now');
         $this->systemAccess = new DateTime('now');
+
+        if (!is_executable("../dependencies/bin/UUID_GENERATOR")) {
+            shell_exec("chmod +x ../dependencies/bin/UUID_GENERATOR");
+        }
     }
-    
+
     /**
-     * Generates a version 4 UUID according to RFC 4122
-     *
-     * @return string
+     * Executes a binary that makes an UUID and return it
      */
     private function generateUuid(): string
     {
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
+        return trim(shell_exec("./../dependencies/bin/UUID_GENERATOR"));
     }
 
     public function getId(): string 
